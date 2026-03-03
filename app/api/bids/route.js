@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { parseStringPromise } from "xml2js";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +13,12 @@ export async function GET() {
       "&pageNo=1";
 
     const response = await fetch(url);
-    const xml = await response.text();
+    const text = await response.text();
 
-    const json = await parseStringPromise(xml, {
-      explicitArray: false
+    return NextResponse.json({
+      url,
+      raw: text
     });
-
-    const items =
-      json?.response?.body?.items?.item || [];
-
-    return NextResponse.json(items);
   } catch (err) {
     return NextResponse.json({ error: err.message });
   }
