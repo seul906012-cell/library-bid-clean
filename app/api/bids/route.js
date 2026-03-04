@@ -6,7 +6,7 @@ export async function GET() {
 
   const url =
     "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc"
-    + "?ServiceKey=" + SERVICE_KEY
+    + "?ServiceKey=" + encodeURIComponent(SERVICE_KEY)
     + "&numOfRows=10&pageNo=1";
 
   const res = await fetch(url);
