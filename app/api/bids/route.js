@@ -1,25 +1,45 @@
-import { NextResponse } from "next/server";
-
 export const dynamic = "force-dynamic";
 
-const SERVICE_KEY = process.env.SERVICE_KEY;
-
 export async function GET() {
-  try {
-    const url =
-      "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc" +
-      `?serviceKey=${encodeURIComponent(SERVICE_KEY)}` +
-      "&numOfRows=10" +
-      "&pageNo=1";
+  const SERVICE_KEY = process.env.SERVICE_KEY;
 
-    const response = await fetch(url);
-    const text = await response.text();
-
-    return NextResponse.json({
-      url,
-      raw: text
-    });
-  } catch (err) {
-    return NextResponse.json({ error: err.message });
+  if (!SERVICE_KEY) {
+    return new Response("SERVICE_KEY not set", { status: 500 });
   }
+
+  const today = new Date();
+  const start = new Date();
+  start.setDate(today.getDate() - 30);
+
+  const fmt = (d, end = false) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}${m}${day}${end ? "2359" : "0000"}`;
+  };
+
+  const baseUrl =
+    `https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch` +
+    `?ServiceKey=${SERVICE_KEY}` +
+    `&numOfRows=100&pageNo=1` +
+    `&inqryDiv=1` +
+    `&inqryBgnDt=${fmt(start)}` +
+    `&inqryEndDt=${fmt(today, true)}`;
+
+  const codes = ["1371029", "9720000"]; // 국립중앙도서관 + 국회도서관
+
+  let allXml = "";
+
+  for (const code of codes) {
+    const res = await fetch(`${baseUrl}&dminsttCd=${code}`);
+    const xml = await res.text();
+    allXml += xml + "\n\n";
+  }
+
+  return new Response(allXml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
 }
