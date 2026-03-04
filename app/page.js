@@ -52,6 +52,7 @@ return keywords.some(k=>title.includes(k));
 }
 
 
+
 let filtered=[];
 
 if(mode==="all"){
@@ -71,11 +72,13 @@ filtered=data.filter(i=>isKeyword(i));
 }
 
 
+
 if(search){
 filtered=filtered.filter(i=>
 (i.bidNtceNm||"").toLowerCase().includes(search.toLowerCase())
 );
 }
+
 
 
 filtered.sort((a,b)=>{
@@ -90,7 +93,10 @@ return da-db;
 });
 
 
-const total=data.length;
+
+const totalCount=data.filter(i=>
+isNational(i)||isAssembly(i)||isKeyword(i)
+).length;
 
 const nationalCount=data.filter(i=>isNational(i)).length;
 
@@ -98,22 +104,21 @@ const assemblyCount=data.filter(i=>isAssembly(i)).length;
 
 const keywordCount=data.filter(i=>isKeyword(i)).length;
 
-const today=new Date().toISOString().slice(0,10);
-
-const todayCount=data.filter(i=>{
-if(!i.bidNtceDt) return false;
-return i.bidNtceDt.startsWith(today);
-}).length;
-
 
 
 return(
 
-<main style={{padding:"40px",fontFamily:"sans-serif",background:"#f2f5f9"}}>
+<main style={{
+padding:"40px",
+fontFamily:"sans-serif",
+background:"#f2f5f9",
+minHeight:"100vh"
+}}>
 
 <h1 style={{marginBottom:"20px"}}>
 📚 국립중앙도서관 · 국회도서관 공고 정보
 </h1>
+
 
 
 <div style={{
@@ -134,7 +139,7 @@ cursor:"pointer",
 borderTop:"5px solid #333"
 }}>
 전체 공고
-<h2>{total}</h2>
+<h2>{totalCount}</h2>
 </div>
 
 
@@ -186,6 +191,7 @@ borderTop:"5px solid #10b981"
 
 
 
+
 <div style={{
 display:"flex",
 gap:"10px",
@@ -217,6 +223,7 @@ borderRadius:"8px"
 </select>
 
 </div>
+
 
 
 
@@ -257,7 +264,11 @@ color:"#111"
 {item.bidNtceNm}
 </a>
 
-<div style={{marginTop:"5px",color:"#666"}}>
+<div style={{
+marginTop:"6px",
+color:"#666",
+fontSize:"14px"
+}}>
 📄 {item.dminsttNm||item.ntceInsttNm}
 </div>
 
@@ -268,6 +279,7 @@ color:"#111"
 })}
 
 </div>
+
 
 
 </main>
