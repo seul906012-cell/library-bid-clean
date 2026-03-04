@@ -25,22 +25,18 @@ export default function Home(){
   const total = data.length;
 
   const national = data.filter(
-  i => (i.dminsttNm || "").includes("국립중앙도서관")
-);
+    i => (i.dminsttNm || "").includes("국립중앙도서관")
+  ).length;
 
-const assembly = data.filter(
-  i => (i.dminsttNm || "").includes("국회도서관")
-);
+  const assembly = data.filter(
+    i => (i.dminsttNm || "").includes("국회도서관")
+  ).length;
 
-const filtered = data.filter(i =>
-  (i.dminsttNm || "").includes("국립중앙도서관") ||
-  (i.dminsttNm || "").includes("국회도서관")
-);
+  const filtered = data.filter(i =>
+    (i.dminsttNm || "").includes("국립중앙도서관") ||
+    (i.dminsttNm || "").includes("국회도서관")
+  );
 
- const filtered = data.filter(i =>
-  (i.dminsttNm || "").includes("국립중앙도서관") ||
-  (i.dminsttNm || "").includes("국회도서관")
-); 
   const today = new Date().toISOString().slice(0,10);
 
   const todayCount = data.filter(i=>{
@@ -86,7 +82,7 @@ const filtered = data.filter(i =>
 
       <ul style={{marginTop:"40px"}}>
 
-        {data.map((item,i)=>(
+        {filtered.map((item,i)=>(
           <li key={i} style={{marginBottom:"10px"}}>
 
             <a
