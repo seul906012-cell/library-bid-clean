@@ -7,6 +7,7 @@ export default function Home(){
   const [data,setData] = useState([]);
   const [keyword,setKeyword] = useState("");
   const [sort,setSort] = useState("latest");
+  const [filter,setFilter] = useState("all");
 
   useEffect(()=>{
 
@@ -26,21 +27,27 @@ export default function Home(){
 
   const today = new Date().toISOString().slice(0,10);
 
-  const national = data.filter(
-    i => (i.dminsttNm || "").includes("국립중앙도서관")
+  const national = data.filter(i =>
+    (i.dminsttNm || "").includes("국립중앙도서관")
   );
 
-  const assembly = data.filter(
-    i => (i.dminsttNm || "").includes("국회도서관")
+  const assembly = data.filter(i =>
+    (i.dminsttNm || "").includes("국회도서관")
   );
 
-  const todayCount = data.filter(i=>{
+  const todayList = data.filter(i=>{
     if(!i.bidNtceDt) return false;
     const date = i.bidNtceDt.split(" ")[0];
     return date === today;
-  }).length;
+  });
 
-  let filtered = data.filter(i=>{
+  let filtered = data;
+
+  if(filter === "national") filtered = national;
+  if(filter === "assembly") filtered = assembly;
+  if(filter === "today") filtered = todayList;
+
+  filtered = filtered.filter(i=>{
     if(!keyword) return true;
     return (i.bidNtceNm || "").includes(keyword);
   });
@@ -72,8 +79,6 @@ export default function Home(){
 
     <main style={{background:"#e9eff6",minHeight:"100vh"}}>
 
-      {/* HEADER */}
-
       <div style={{
         background:"#2d6cdf",
         color:"white",
@@ -86,22 +91,29 @@ export default function Home(){
 
       <div style={{padding:"40px"}}>
 
-        {/* CARDS */}
+        {/* 카드 */}
 
-        <div style={{
-          display:"flex",
-          gap:"20px"
-        }}>
+        <div style={{display:"flex",gap:"20px"}}>
 
-          <Card title="전체 공고" value={data.length} color="#555" />
-          <Card title="국립중앙도서관" value={national.length} color="#2d6cdf"/>
-          <Card title="국회도서관" value={assembly.length} color="#8e44ad"/>
-          <Card title="오늘 등록" value={todayCount} color="#27ae60"/>
+          <Card title="전체 공고" value={data.length} color="#555"
+            onClick={()=>setFilter("all")}
+          />
+
+          <Card title="국립중앙도서관" value={national.length} color="#2d6cdf"
+            onClick={()=>setFilter("national")}
+          />
+
+          <Card title="국회도서관" value={assembly.length} color="#8e44ad"
+            onClick={()=>setFilter("assembly")}
+          />
+
+          <Card title="오늘 등록" value={todayList.length} color="#27ae60"
+            onClick={()=>setFilter("today")}
+          />
 
         </div>
 
-
-        {/* SEARCH */}
+        {/* 검색 */}
 
         <div style={{
           marginTop:"30px",
@@ -136,8 +148,7 @@ export default function Home(){
 
         </div>
 
-
-        {/* LIST */}
+        {/* 공고 목록 */}
 
         <div style={{marginTop:"30px"}}>
 
@@ -196,18 +207,22 @@ export default function Home(){
 }
 
 
-function Card({title,value,color}){
+function Card({title,value,color,onClick}){
 
   return(
 
-    <div style={{
-      background:"white",
-      padding:"20px",
-      borderRadius:"12px",
-      width:"200px",
-      borderTop:`5px solid ${color}`,
-      boxShadow:"0 3px 8px rgba(0,0,0,0.06)"
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        background:"white",
+        padding:"20px",
+        borderRadius:"12px",
+        width:"200px",
+        borderTop:`5px solid ${color}`,
+        boxShadow:"0 3px 8px rgba(0,0,0,0.06)",
+        cursor:"pointer"
+      }}
+    >
 
       <div style={{color:"#777",fontSize:"14px"}}>
         {title}
