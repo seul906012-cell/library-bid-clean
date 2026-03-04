@@ -4,6 +4,7 @@ import xml2js from "xml2js";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+
   const SERVICE_KEY = process.env.SERVICE_KEY;
 
   const today = new Date();
@@ -12,8 +13,8 @@ export async function GET() {
 
   const fmt = (d) => {
     const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
+    const m = String(d.getMonth() + 1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
     return `${y}${m}${day}`;
   };
 
@@ -28,12 +29,25 @@ export async function GET() {
   const res = await fetch(url);
   const xml = await res.text();
 
-  const parser = new xml2js.Parser({ explicitArray: false });
+  const parser = new xml2js.Parser({ explicitArray:false });
   const json = await parser.parseStringPromise(xml);
 
-  let items = json?.response?.body?.items?.item || [];
+  let items = [];
 
-  if (!Array.isArray(items)) items = [items];
+  if (
+    json &&
+    json.response &&
+    json.response.body &&
+    json.response.body.items &&
+    json.response.body.items.item
+  ) {
+    items = json.response.body.items.item;
+
+    if (!Array.isArray(items)) {
+      items = [items];
+    }
+  }
 
   return NextResponse.json(items);
+
 }
