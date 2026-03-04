@@ -6,6 +6,7 @@ export default function Home(){
 
   const [data,setData] = useState([]);
   const [keyword,setKeyword] = useState("");
+  const [sort,setSort] = useState("latest");
 
   useEffect(()=>{
 
@@ -39,10 +40,33 @@ export default function Home(){
     return date === today;
   }).length;
 
-  const filtered = data.filter(i=>{
+  let filtered = data.filter(i=>{
     if(!keyword) return true;
     return (i.bidNtceNm || "").includes(keyword);
   });
+
+  filtered = filtered.sort((a,b)=>{
+
+    const A = new Date(a.bidNtceDt);
+    const B = new Date(b.bidNtceDt);
+
+    return sort === "latest" ? B - A : A - B;
+
+  });
+
+  const getAgencyStyle = (name="") =>{
+
+    if(name.includes("국립중앙도서관")){
+      return {color:"#2d6cdf",icon:"📘"};
+    }
+
+    if(name.includes("국회도서관")){
+      return {color:"#8e44ad",icon:"🏛️"};
+    }
+
+    return {color:"#999",icon:"📄"};
+
+  };
 
   return(
 
@@ -60,25 +84,24 @@ export default function Home(){
         📚 국립중앙도서관 · 국회도서관 공고 정보
       </div>
 
-
       <div style={{padding:"40px"}}>
 
-        {/* CARD AREA */}
+        {/* CARDS */}
 
         <div style={{
           display:"flex",
           gap:"20px"
         }}>
 
-          <Card title="전체 공고" value={data.length} />
-          <Card title="국립중앙도서관" value={national.length} />
-          <Card title="국회도서관" value={assembly.length} />
-          <Card title="오늘 등록" value={todayCount} />
+          <Card title="전체 공고" value={data.length} color="#555" />
+          <Card title="국립중앙도서관" value={national.length} color="#2d6cdf"/>
+          <Card title="국회도서관" value={assembly.length} color="#8e44ad"/>
+          <Card title="오늘 등록" value={todayCount} color="#27ae60"/>
 
         </div>
 
 
-        {/* SEARCH BAR */}
+        {/* SEARCH */}
 
         <div style={{
           marginTop:"30px",
@@ -91,7 +114,7 @@ export default function Home(){
             value={keyword}
             onChange={(e)=>setKeyword(e.target.value)}
             style={{
-              width:"300px",
+              width:"320px",
               padding:"10px",
               borderRadius:"8px",
               border:"1px solid #ccc"
@@ -99,13 +122,16 @@ export default function Home(){
           />
 
           <select
+            value={sort}
+            onChange={(e)=>setSort(e.target.value)}
             style={{
               padding:"10px",
               borderRadius:"8px",
               border:"1px solid #ccc"
             }}
           >
-            <option>최신순</option>
+            <option value="latest">최신순</option>
+            <option value="oldest">오래된순</option>
           </select>
 
         </div>
@@ -115,36 +141,49 @@ export default function Home(){
 
         <div style={{marginTop:"30px"}}>
 
-          {filtered.map((item,i)=>(
-            <div
-              key={i}
-              style={{
-                background:"white",
-                padding:"15px",
-                marginBottom:"10px",
-                borderRadius:"8px",
-                boxShadow:"0 2px 6px rgba(0,0,0,0.05)"
-              }}
-            >
+          {filtered.map((item,i)=>{
 
-              <a
-                href={item.bidNtceDtlUrl || item.bidNtceUrl}
-                target="_blank"
+            const agency = getAgencyStyle(item.dminsttNm);
+
+            return(
+
+              <div
+                key={i}
                 style={{
-                  fontWeight:"bold",
-                  color:"#333",
-                  textDecoration:"none"
+                  background:"white",
+                  padding:"15px",
+                  marginBottom:"10px",
+                  borderRadius:"8px",
+                  borderLeft:`5px solid ${agency.color}`,
+                  boxShadow:"0 2px 6px rgba(0,0,0,0.05)"
                 }}
               >
-                {item.bidNtceNm}
-              </a>
 
-              <div style={{marginTop:"5px",color:"#777"}}>
-                {item.dminsttNm}
+                <a
+                  href={item.bidNtceDtlUrl || item.bidNtceUrl}
+                  target="_blank"
+                  style={{
+                    fontWeight:"bold",
+                    color:"#333",
+                    textDecoration:"none"
+                  }}
+                >
+                  {item.bidNtceNm}
+                </a>
+
+                <div style={{
+                  marginTop:"5px",
+                  color:agency.color,
+                  fontWeight:"bold"
+                }}>
+                  {agency.icon} {item.dminsttNm}
+                </div>
+
               </div>
 
-            </div>
-          ))}
+            )
+
+          })}
 
         </div>
 
@@ -157,7 +196,7 @@ export default function Home(){
 }
 
 
-function Card({title,value}){
+function Card({title,value,color}){
 
   return(
 
@@ -166,6 +205,7 @@ function Card({title,value}){
       padding:"20px",
       borderRadius:"12px",
       width:"200px",
+      borderTop:`5px solid ${color}`,
       boxShadow:"0 3px 8px rgba(0,0,0,0.06)"
     }}>
 
@@ -176,7 +216,8 @@ function Card({title,value}){
       <div style={{
         fontSize:"28px",
         fontWeight:"bold",
-        marginTop:"8px"
+        marginTop:"8px",
+        color:color
       }}>
         {value}
       </div>
