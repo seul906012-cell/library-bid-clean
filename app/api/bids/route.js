@@ -7,10 +7,13 @@ const SERVICE_KEY = process.env.SERVICE_KEY;
 export async function GET() {
   try {
     const url =
-      "https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc" +
+      "http://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc" +
       `?serviceKey=${SERVICE_KEY}` +
       "&numOfRows=10" +
-      "&pageNo=1";
+      "&pageNo=1" +
+      "&inqryDiv=1" +
+      "&inqryBgnDt=20240101" +
+      "&inqryEndDt=20260304";
 
     const response = await fetch(url);
     const text = await response.text();
