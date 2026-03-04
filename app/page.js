@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 export default function Home(){
 
   const [data,setData] = useState([]);
+  const [keyword,setKeyword] = useState("");
 
   useEffect(()=>{
 
@@ -16,7 +17,7 @@ export default function Home(){
 
     load();
 
-    const timer = setInterval(load,300000); // 5분
+    const timer = setInterval(load,300000);
 
     return ()=>clearInterval(timer);
 
@@ -38,64 +39,150 @@ export default function Home(){
     return date === today;
   }).length;
 
+  const filtered = data.filter(i=>{
+    if(!keyword) return true;
+    return (i.bidNtceNm || "").includes(keyword);
+  });
+
   return(
 
-    <main style={{padding:"40px",fontFamily:"sans-serif"}}>
+    <main style={{background:"#e9eff6",minHeight:"100vh"}}>
 
-      <h1>국립중앙도서관 · 국회도서관 공고 정보</h1>
+      {/* HEADER */}
 
       <div style={{
-        display:"flex",
-        gap:"30px",
-        marginTop:"20px",
-        fontSize:"18px"
+        background:"#2d6cdf",
+        color:"white",
+        padding:"20px 40px",
+        fontSize:"22px",
+        fontWeight:"bold"
       }}>
+        📚 국립중앙도서관 · 국회도서관 공고 정보
+      </div>
 
-        <div>
-          전체 공고<br/>
-          <b>{data.length}</b>
+
+      <div style={{padding:"40px"}}>
+
+        {/* CARD AREA */}
+
+        <div style={{
+          display:"flex",
+          gap:"20px"
+        }}>
+
+          <Card title="전체 공고" value={data.length} />
+          <Card title="국립중앙도서관" value={national.length} />
+          <Card title="국회도서관" value={assembly.length} />
+          <Card title="오늘 등록" value={todayCount} />
+
         </div>
 
-        <div>
-          국립중앙도서관<br/>
-          <b>{national.length}</b>
+
+        {/* SEARCH BAR */}
+
+        <div style={{
+          marginTop:"30px",
+          display:"flex",
+          justifyContent:"space-between"
+        }}>
+
+          <input
+            placeholder="🔍 현재 결과 내 검색"
+            value={keyword}
+            onChange={(e)=>setKeyword(e.target.value)}
+            style={{
+              width:"300px",
+              padding:"10px",
+              borderRadius:"8px",
+              border:"1px solid #ccc"
+            }}
+          />
+
+          <select
+            style={{
+              padding:"10px",
+              borderRadius:"8px",
+              border:"1px solid #ccc"
+            }}
+          >
+            <option>최신순</option>
+          </select>
+
         </div>
 
-        <div>
-          국회도서관<br/>
-          <b>{assembly.length}</b>
-        </div>
 
-        <div>
-          오늘 등록<br/>
-          <b>{todayCount}</b>
+        {/* LIST */}
+
+        <div style={{marginTop:"30px"}}>
+
+          {filtered.map((item,i)=>(
+            <div
+              key={i}
+              style={{
+                background:"white",
+                padding:"15px",
+                marginBottom:"10px",
+                borderRadius:"8px",
+                boxShadow:"0 2px 6px rgba(0,0,0,0.05)"
+              }}
+            >
+
+              <a
+                href={item.bidNtceDtlUrl || item.bidNtceUrl}
+                target="_blank"
+                style={{
+                  fontWeight:"bold",
+                  color:"#333",
+                  textDecoration:"none"
+                }}
+              >
+                {item.bidNtceNm}
+              </a>
+
+              <div style={{marginTop:"5px",color:"#777"}}>
+                {item.dminsttNm}
+              </div>
+
+            </div>
+          ))}
+
         </div>
 
       </div>
 
-      <ul style={{marginTop:"40px"}}>
-
-        {data.map((item,i)=>(
-          <li key={i} style={{marginBottom:"10px"}}>
-
-            <a
-              href={item.bidNtceDtlUrl || item.bidNtceUrl}
-              target="_blank"
-              style={{fontWeight:"bold"}}
-            >
-              {item.bidNtceNm}
-            </a>
-
-            {" "}
-            ({item.dminsttNm})
-
-          </li>
-        ))}
-
-      </ul>
-
     </main>
 
   );
+
+}
+
+
+function Card({title,value}){
+
+  return(
+
+    <div style={{
+      background:"white",
+      padding:"20px",
+      borderRadius:"12px",
+      width:"200px",
+      boxShadow:"0 3px 8px rgba(0,0,0,0.06)"
+    }}>
+
+      <div style={{color:"#777",fontSize:"14px"}}>
+        {title}
+      </div>
+
+      <div style={{
+        fontSize:"28px",
+        fontWeight:"bold",
+        marginTop:"8px"
+      }}>
+        {value}
+      </div>
+
+    </div>
+
+  )
 
 }
