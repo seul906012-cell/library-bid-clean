@@ -13,6 +13,32 @@ const base =
 const parser = new xml2js.Parser({ explicitArray:false });
 
 
+/* 날짜 생성 */
+
+const today = new Date();
+const start = new Date();
+
+start.setDate(today.getDate()-60);
+
+function format(d,end=false){
+
+const y=d.getFullYear();
+const m=String(d.getMonth()+1).padStart(2,"0");
+const day=String(d.getDate()).padStart(2,"0");
+
+return `${y}${m}${day}${end?"2359":"0000"}`;
+
+}
+
+const baseQuery =
+`ServiceKey=${SERVICE_KEY}
+&numOfRows=200
+&pageNo=1
+&inqryDiv=1
+&inqryBgnDt=${format(start)}
+&inqryEndDt=${format(today,true)}`.replace(/\n/g,"");
+
+
 async function fetchData(url){
 
 const res = await fetch(url);
@@ -32,11 +58,11 @@ return items;
 /* 기관 조회 */
 
 const national = await fetchData(
-`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&dminsttNm=국립중앙도서관`
+`${base}?${baseQuery}&dminsttCd=1371029`
 );
 
 const assembly = await fetchData(
-`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&dminsttNm=국회도서관`
+`${base}?${baseQuery}&dminsttCd=9720000`
 );
 
 
@@ -56,7 +82,7 @@ let keywordData=[];
 for(const k of keywords){
 
 const data = await fetchData(
-`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&bidNtceNm=${encodeURIComponent(k)}`
+`${base}?${baseQuery}&bidNtceNm=${encodeURIComponent(k)}`
 );
 
 keywordData = keywordData.concat(data);
