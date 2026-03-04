@@ -27,13 +27,22 @@ export default function Home(){
 
   const today = new Date().toISOString().slice(0,10);
 
-  const national = data.filter(i =>
-    (i.dminsttNm || "").includes("국립중앙도서관")
-  );
+  const isNational = (i)=>{
+    const name =
+      (i.dminsttNm || "") +
+      (i.ntceInsttNm || "");
+    return name.includes("국립중앙도서관");
+  };
 
-  const assembly = data.filter(i =>
-    (i.dminsttNm || "").includes("국회도서관")
-  );
+  const isAssembly = (i)=>{
+    const name =
+      (i.dminsttNm || "") +
+      (i.ntceInsttNm || "");
+    return name.includes("국회도서관");
+  };
+
+  const national = data.filter(isNational);
+  const assembly = data.filter(isAssembly);
 
   const todayList = data.filter(i=>{
     if(!i.bidNtceDt) return false;
@@ -61,7 +70,11 @@ export default function Home(){
 
   });
 
-  const getAgencyStyle = (name="") =>{
+  const getAgencyStyle = (item)=>{
+
+    const name =
+      (item.dminsttNm || "") +
+      (item.ntceInsttNm || "");
 
     if(name.includes("국립중앙도서관")){
       return {color:"#2d6cdf",icon:"📘"};
@@ -78,6 +91,8 @@ export default function Home(){
   return(
 
     <main style={{background:"#e9eff6",minHeight:"100vh"}}>
+
+      {/* HEADER */}
 
       <div style={{
         background:"#2d6cdf",
@@ -154,7 +169,7 @@ export default function Home(){
 
           {filtered.map((item,i)=>{
 
-            const agency = getAgencyStyle(item.dminsttNm);
+            const agency = getAgencyStyle(item);
 
             return(
 
@@ -187,7 +202,7 @@ export default function Home(){
                   color:agency.color,
                   fontWeight:"bold"
                 }}>
-                  {agency.icon} {item.dminsttNm}
+                  {agency.icon} {item.dminsttNm || item.ntceInsttNm}
                 </div>
 
               </div>
