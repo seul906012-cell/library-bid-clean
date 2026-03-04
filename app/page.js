@@ -16,79 +16,26 @@ export default function Home(){
 
     load();
 
-    const timer = setInterval(load,300000); // 5분
+    const timer = setInterval(load,300000);
 
     return ()=>clearInterval(timer);
 
   },[]);
 
-  const filtered = data.filter(i =>
-    (i.dminsttNm || "").includes("국립중앙도서관") ||
-    (i.dminsttNm || "").includes("국회도서관")
-  );
-
-  const total = filtered.length;
-
-  const national = filtered.filter(
-    i => (i.dminsttNm || "").includes("국립중앙도서관")
-  ).length;
-
-  const assembly = filtered.filter(
-    i => (i.dminsttNm || "").includes("국회도서관")
-  ).length;
-
-  const today = new Date().toISOString().slice(0,10);
-
-  const todayCount = filtered.filter(i=>{
-    if(!i.bidNtceDt) return false;
-    const date = i.bidNtceDt.split(" ")[0];
-    return date === today;
-  }).length;
-
   return(
 
     <main style={{padding:"40px",fontFamily:"sans-serif"}}>
 
-      <h1>국립중앙도서관 · 국회도서관 공고 정보</h1>
-
-      <div style={{
-        display:"flex",
-        gap:"30px",
-        marginTop:"20px",
-        fontSize:"18px"
-      }}>
-
-        <div>
-          전체 공고<br/>
-          <b>{total}</b>
-        </div>
-
-        <div>
-          국립중앙도서관<br/>
-          <b>{national}</b>
-        </div>
-
-        <div>
-          국회도서관<br/>
-          <b>{assembly}</b>
-        </div>
-
-        <div>
-          오늘 등록<br/>
-          <b>{todayCount}</b>
-        </div>
-
-      </div>
+      <h1>나라장터 공고 확인</h1>
 
       <ul style={{marginTop:"40px"}}>
 
-        {filtered.map((item,i)=>(
+        {data.map((item,i)=>(
           <li key={i} style={{marginBottom:"10px"}}>
 
             <a
               href={item.bidNtceDtlUrl || item.bidNtceUrl}
               target="_blank"
-              style={{fontWeight:"bold"}}
             >
               {item.bidNtceNm}
             </a>
