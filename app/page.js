@@ -14,13 +14,13 @@ export default function Home() {
 
   const total = data.length;
 
-  const national = data.filter(
-    i => i.instNm?.includes("국립중앙도서관")
-  ).length;
+ const national = data.filter(
+  i => (i.dminsttNm || "").includes("국립중앙도서관")
+).length;
 
-  const assembly = data.filter(
-    i => i.instNm?.includes("국회")
-  ).length;
+const assembly = data.filter(
+  i => (i.dminsttNm || "").includes("국회")
+).length;
 
   const today = new Date().toISOString().slice(0,10);
 
@@ -48,7 +48,7 @@ export default function Home() {
       <ul style={{marginTop:"40px"}}>
         {data.map((item,i)=>(
           <li key={i}>
-            {item.bidNtceNm}
+            {item.bidNtceNm} ({item.dminsttNm})
           </li>
         ))}
       </ul>
