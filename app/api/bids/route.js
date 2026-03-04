@@ -5,48 +5,97 @@ export const dynamic = "force-dynamic";
 
 export async function GET(){
 
-  const SERVICE_KEY = process.env.SERVICE_KEY;
+const SERVICE_KEY = process.env.SERVICE_KEY;
 
-  const today = new Date();
+const base =
+"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch";
 
-  const format = (d)=>{
-    const y=d.getFullYear();
-    const m=String(d.getMonth()+1).padStart(2,"0");
-    const day=String(d.getDate()).padStart(2,"0");
-    return `${y}${m}${day}`;
-  };
+const parser = new xml2js.Parser({ explicitArray:false });
 
-  const parser = new xml2js.Parser({ explicitArray:false });
 
-  let all = [];
+async function fetchData(url){
 
-  for(let i=0;i<3;i++){
+const res = await fetch(url);
+const xml = await res.text();
 
-    const end = new Date();
-    end.setDate(today.getDate() - (i*20));
+const json = await parser.parseStringPromise(xml);
 
-    const start = new Date();
-    start.setDate(today.getDate() - (i*20+20));
+let items = json?.response?.body?.items?.item || [];
 
-    const url =
-    "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch"
-    + "?ServiceKey="+SERVICE_KEY
-    + "&numOfRows=200&pageNo=1"
-    + "&inqryDiv=1"
-    + "&inqryBgnDt="+format(start)
-    + "&inqryEndDt="+format(end);
+if(!Array.isArray(items)) items=[items];
 
-    const res = await fetch(url);
-    const xml = await res.text();
+return items;
 
-    const json = await parser.parseStringPromise(xml);
+}
 
-    let items = json?.response?.body?.items?.item || [];
 
-    if(!Array.isArray(items)) items=[items];
+/* 기관 조회 */
 
-    all = all.concat(items);
-  }
+const national = await fetchData(
+`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&dminsttNm=국립중앙도서관`
+);
 
-  return NextResponse.json(all);
+const assembly = await fetchData(
+`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&dminsttNm=국회도서관`
+);
+
+
+/* 키워드 조회 */
+
+const keywords = [
+"도서관",
+"기록물",
+"DB",
+"DB구축",
+"디지털",
+"디지털화"
+];
+
+let keywordData=[];
+
+for(const k of keywords){
+
+const data = await fetchData(
+`${base}?ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&bidNtceNm=${encodeURIComponent(k)}`
+);
+
+keywordData = keywordData.concat(data);
+
+}
+
+
+/* 전체 합치기 */
+
+const all = [
+...national,
+...assembly,
+...keywordData
+];
+
+
+/* 중복 제거 */
+
+const unique = [];
+
+const map = new Map();
+
+for(const item of all){
+
+if(!map.has(item.bidNtceNo)){
+map.set(item.bidNtceNo,true);
+unique.push(item);
+}
+
+}
+
+
+return NextResponse.json({
+
+national,
+assembly,
+keyword:keywordData,
+all:unique
+
+});
+
 }
