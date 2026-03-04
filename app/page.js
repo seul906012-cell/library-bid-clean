@@ -4,256 +4,274 @@ import { useEffect, useState } from "react";
 
 export default function Home(){
 
-  const [data,setData] = useState([]);
-  const [keyword,setKeyword] = useState("");
-  const [sort,setSort] = useState("latest");
-  const [filter,setFilter] = useState("all");
+const [data,setData] = useState([]);
+const [mode,setMode] = useState("all");
+const [search,setSearch] = useState("");
+const [sort,setSort] = useState("latest");
 
-  useEffect(()=>{
+useEffect(()=>{
 
-    const load = async ()=>{
-      const res = await fetch("/api/bids");
-      const json = await res.json();
-      setData(json);
-    };
-
-    load();
-
-    const timer = setInterval(load,300000);
-
-    return ()=>clearInterval(timer);
-
-  },[]);
-
-  const today = new Date().toISOString().slice(0,10);
-
-  const isNational = (i)=>{
-    const name =
-      (i.dminsttNm || "") +
-      (i.ntceInsttNm || "");
-    return name.includes("국립중앙도서관");
+  const load = ()=>{
+    fetch("/api/bids")
+    .then(res=>res.json())
+    .then(setData);
   };
 
-  const isAssembly = (i)=>{
-    const name =
-      (i.dminsttNm || "") +
-      (i.ntceInsttNm || "");
-    return name.includes("국회도서관");
-  };
+  load();
 
-  const national = data.filter(isNational);
-  const assembly = data.filter(isAssembly);
+  const timer = setInterval(load,300000);
 
-  const todayList = data.filter(i=>{
-    if(!i.bidNtceDt) return false;
-    const date = i.bidNtceDt.split(" ")[0];
-    return date === today;
-  });
+  return ()=>clearInterval(timer);
 
-  let filtered = data;
+},[]);
 
-  if(filter === "national") filtered = national;
-  if(filter === "assembly") filtered = assembly;
-  if(filter === "today") filtered = todayList;
 
-  filtered = filtered.filter(i=>{
-    if(!keyword) return true;
-    return (i.bidNtceNm || "").includes(keyword);
-  });
+const keywords=[
+"도서관",
+"기록물",
+"DB",
+"DB구축",
+"디지털",
+"디지털화"
+];
 
-  filtered = filtered.sort((a,b)=>{
 
-    const A = new Date(a.bidNtceDt);
-    const B = new Date(b.bidNtceDt);
+const isNational=(i)=>{
+const name=(i.dminsttNm||"")+(i.ntceInsttNm||"");
+return name.includes("국립중앙도서관");
+}
 
-    return sort === "latest" ? B - A : A - B;
+const isAssembly=(i)=>{
+const name=(i.dminsttNm||"")+(i.ntceInsttNm||"");
+return name.includes("국회도서관");
+}
 
-  });
-
-  const getAgencyStyle = (item)=>{
-
-    const name =
-      (item.dminsttNm || "") +
-      (item.ntceInsttNm || "");
-
-    if(name.includes("국립중앙도서관")){
-      return {color:"#2d6cdf",icon:"📘"};
-    }
-
-    if(name.includes("국회도서관")){
-      return {color:"#8e44ad",icon:"🏛️"};
-    }
-
-    return {color:"#999",icon:"📄"};
-
-  };
-
-  return(
-
-    <main style={{background:"#e9eff6",minHeight:"100vh"}}>
-
-      {/* HEADER */}
-
-      <div style={{
-        background:"#2d6cdf",
-        color:"white",
-        padding:"20px 40px",
-        fontSize:"22px",
-        fontWeight:"bold"
-      }}>
-        📚 국립중앙도서관 · 국회도서관 공고 정보
-      </div>
-
-      <div style={{padding:"40px"}}>
-
-        {/* 카드 */}
-
-        <div style={{display:"flex",gap:"20px"}}>
-
-          <Card title="전체 공고" value={data.length} color="#555"
-            onClick={()=>setFilter("all")}
-          />
-
-          <Card title="국립중앙도서관" value={national.length} color="#2d6cdf"
-            onClick={()=>setFilter("national")}
-          />
-
-          <Card title="국회도서관" value={assembly.length} color="#8e44ad"
-            onClick={()=>setFilter("assembly")}
-          />
-
-          <Card title="오늘 등록" value={todayList.length} color="#27ae60"
-            onClick={()=>setFilter("today")}
-          />
-
-        </div>
-
-        {/* 검색 */}
-
-        <div style={{
-          marginTop:"30px",
-          display:"flex",
-          justifyContent:"space-between"
-        }}>
-
-          <input
-            placeholder="🔍 현재 결과 내 검색"
-            value={keyword}
-            onChange={(e)=>setKeyword(e.target.value)}
-            style={{
-              width:"320px",
-              padding:"10px",
-              borderRadius:"8px",
-              border:"1px solid #ccc"
-            }}
-          />
-
-          <select
-            value={sort}
-            onChange={(e)=>setSort(e.target.value)}
-            style={{
-              padding:"10px",
-              borderRadius:"8px",
-              border:"1px solid #ccc"
-            }}
-          >
-            <option value="latest">최신순</option>
-            <option value="oldest">오래된순</option>
-          </select>
-
-        </div>
-
-        {/* 공고 목록 */}
-
-        <div style={{marginTop:"30px"}}>
-
-          {filtered.map((item,i)=>{
-
-            const agency = getAgencyStyle(item);
-
-            return(
-
-              <div
-                key={i}
-                style={{
-                  background:"white",
-                  padding:"15px",
-                  marginBottom:"10px",
-                  borderRadius:"8px",
-                  borderLeft:`5px solid ${agency.color}`,
-                  boxShadow:"0 2px 6px rgba(0,0,0,0.05)"
-                }}
-              >
-
-                <a
-                  href={item.bidNtceDtlUrl || item.bidNtceUrl}
-                  target="_blank"
-                  style={{
-                    fontWeight:"bold",
-                    color:"#333",
-                    textDecoration:"none"
-                  }}
-                >
-                  {item.bidNtceNm}
-                </a>
-
-                <div style={{
-                  marginTop:"5px",
-                  color:agency.color,
-                  fontWeight:"bold"
-                }}>
-                  {agency.icon} {item.dminsttNm || item.ntceInsttNm}
-                </div>
-
-              </div>
-
-            )
-
-          })}
-
-        </div>
-
-      </div>
-
-    </main>
-
-  );
-
+const isKeyword=(i)=>{
+const title=i.bidNtceNm||"";
+return keywords.some(k=>title.includes(k));
 }
 
 
-function Card({title,value,color,onClick}){
+let filtered=[];
 
-  return(
+if(mode==="all"){
+filtered=data.filter(i=>isNational(i)||isAssembly(i)||isKeyword(i));
+}
 
-    <div
-      onClick={onClick}
-      style={{
-        background:"white",
-        padding:"20px",
-        borderRadius:"12px",
-        width:"200px",
-        borderTop:`5px solid ${color}`,
-        boxShadow:"0 3px 8px rgba(0,0,0,0.06)",
-        cursor:"pointer"
-      }}
-    >
+if(mode==="national"){
+filtered=data.filter(i=>isNational(i));
+}
 
-      <div style={{color:"#777",fontSize:"14px"}}>
-        {title}
-      </div>
+if(mode==="assembly"){
+filtered=data.filter(i=>isAssembly(i));
+}
 
-      <div style={{
-        fontSize:"28px",
-        fontWeight:"bold",
-        marginTop:"8px",
-        color:color
-      }}>
-        {value}
-      </div>
+if(mode==="keyword"){
+filtered=data.filter(i=>isKeyword(i));
+}
 
-    </div>
 
-  )
+if(search){
+filtered=filtered.filter(i=>
+(i.bidNtceNm||"").toLowerCase().includes(search.toLowerCase())
+);
+}
+
+
+filtered.sort((a,b)=>{
+
+const da=new Date(a.bidNtceDt||0);
+const db=new Date(b.bidNtceDt||0);
+
+if(sort==="latest") return db-da;
+
+return da-db;
+
+});
+
+
+const total=data.length;
+
+const nationalCount=data.filter(i=>isNational(i)).length;
+
+const assemblyCount=data.filter(i=>isAssembly(i)).length;
+
+const keywordCount=data.filter(i=>isKeyword(i)).length;
+
+const today=new Date().toISOString().slice(0,10);
+
+const todayCount=data.filter(i=>{
+if(!i.bidNtceDt) return false;
+return i.bidNtceDt.startsWith(today);
+}).length;
+
+
+
+return(
+
+<main style={{padding:"40px",fontFamily:"sans-serif",background:"#f2f5f9"}}>
+
+<h1 style={{marginBottom:"20px"}}>
+📚 국립중앙도서관 · 국회도서관 공고 정보
+</h1>
+
+
+<div style={{
+display:"flex",
+gap:"20px",
+marginBottom:"30px"
+}}>
+
+
+<div
+onClick={()=>setMode("all")}
+style={{
+flex:1,
+background:"#fff",
+padding:"20px",
+borderRadius:"12px",
+cursor:"pointer",
+borderTop:"5px solid #333"
+}}>
+전체 공고
+<h2>{total}</h2>
+</div>
+
+
+<div
+onClick={()=>setMode("national")}
+style={{
+flex:1,
+background:"#fff",
+padding:"20px",
+borderRadius:"12px",
+cursor:"pointer",
+borderTop:"5px solid #3b82f6"
+}}>
+국립중앙도서관
+<h2>{nationalCount}</h2>
+</div>
+
+
+<div
+onClick={()=>setMode("assembly")}
+style={{
+flex:1,
+background:"#fff",
+padding:"20px",
+borderRadius:"12px",
+cursor:"pointer",
+borderTop:"5px solid #8b5cf6"
+}}>
+국회도서관
+<h2>{assemblyCount}</h2>
+</div>
+
+
+<div
+onClick={()=>setMode("keyword")}
+style={{
+flex:1,
+background:"#fff",
+padding:"20px",
+borderRadius:"12px",
+cursor:"pointer",
+borderTop:"5px solid #10b981"
+}}>
+키워드
+<h2>{keywordCount}</h2>
+</div>
+
+</div>
+
+
+
+<div style={{
+display:"flex",
+gap:"10px",
+marginBottom:"30px"
+}}>
+
+<input
+placeholder="현재 결과 내 검색"
+value={search}
+onChange={(e)=>setSearch(e.target.value)}
+style={{
+flex:1,
+padding:"10px",
+borderRadius:"8px",
+border:"1px solid #ccc"
+}}
+/>
+
+<select
+value={sort}
+onChange={(e)=>setSort(e.target.value)}
+style={{
+padding:"10px",
+borderRadius:"8px"
+}}
+>
+<option value="latest">최신순</option>
+<option value="old">오래된순</option>
+</select>
+
+</div>
+
+
+
+<div>
+
+{filtered.map((item,i)=>{
+
+let color="#999";
+
+if(isNational(item)) color="#3b82f6";
+else if(isAssembly(item)) color="#8b5cf6";
+else if(isKeyword(item)) color="#10b981";
+
+
+return(
+
+<div
+key={i}
+style={{
+background:"#fff",
+padding:"20px",
+borderRadius:"10px",
+marginBottom:"12px",
+borderLeft:`6px solid ${color}`
+}}
+>
+
+<a
+href={item.bidNtceUrl}
+target="_blank"
+style={{
+fontWeight:"bold",
+fontSize:"16px",
+textDecoration:"none",
+color:"#111"
+}}
+>
+{item.bidNtceNm}
+</a>
+
+<div style={{marginTop:"5px",color:"#666"}}>
+📄 {item.dminsttNm||item.ntceInsttNm}
+</div>
+
+</div>
+
+)
+
+})}
+
+</div>
+
+
+</main>
+
+);
 
 }
