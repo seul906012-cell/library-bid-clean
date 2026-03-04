@@ -12,9 +12,12 @@ export async function GET() {
   const res = await fetch(url);
   const text = await res.text();
 
-  return new Response(text, {
-    headers: {
-      "Content-Type": "text/xml"
+  return new Response(JSON.stringify({
+    url,
+    raw:text
+  }),{
+    headers:{
+      "Content-Type":"application/json"
     }
   });
 
