@@ -8,10 +8,9 @@ export async function GET() {
   try {
     const url =
       "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc" +
-      `?serviceKey=${SERVICE_KEY}` +
+      `?serviceKey=${encodeURIComponent(SERVICE_KEY)}` +
       "&numOfRows=10" +
-      "&pageNo=1" +
-      "&type=xml";
+      "&pageNo=1";
 
     const response = await fetch(url);
     const text = await response.text();
