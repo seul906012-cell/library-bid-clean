@@ -3,13 +3,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const SERVICE_KEY = process.env.SERVICE_KEY;
 
-  if (!SERVICE_KEY) {
-    return new Response("SERVICE_KEY not set", { status: 500 });
-  }
-
   const today = new Date();
   const start = new Date();
-  start.setDate(today.getDate() - 30);
+  start.setDate(today.getDate() - 7);
 
   const fmt = (d) => {
     const y = d.getFullYear();
@@ -28,18 +24,17 @@ export async function GET() {
 
   const codes = ["1371029", "9720000"];
 
-  let allXml = "";
+  const results = [];
 
   for (const code of codes) {
     const res = await fetch(`${baseUrl}&dminsttCd=${code}`);
     const xml = await res.text();
-    allXml += xml + "\n\n";
+    results.push(xml);
   }
 
-  return new Response(allXml, {
+  return new Response(JSON.stringify(results), {
     headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Access-Control-Allow-Origin": "*"
+      "Content-Type": "application/json; charset=utf-8"
     }
   });
 }
