@@ -25,13 +25,22 @@ export default function Home(){
   const total = data.length;
 
   const national = data.filter(
-    i => (i.dminsttNm || "").includes("국립중앙도서관")
-  ).length;
+  i => (i.dminsttNm || "").includes("국립중앙도서관")
+);
 
-  const assembly = data.filter(
-    i => (i.dminsttNm || "").includes("국회")
-  ).length;
+const assembly = data.filter(
+  i => (i.dminsttNm || "").includes("국회도서관")
+);
 
+const filtered = data.filter(i =>
+  (i.dminsttNm || "").includes("국립중앙도서관") ||
+  (i.dminsttNm || "").includes("국회도서관")
+);
+
+ const filtered = data.filter(i =>
+  (i.dminsttNm || "").includes("국립중앙도서관") ||
+  (i.dminsttNm || "").includes("국회도서관")
+); 
   const today = new Date().toISOString().slice(0,10);
 
   const todayCount = data.filter(i=>{
