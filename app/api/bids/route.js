@@ -11,11 +11,11 @@ export async function GET() {
   const start = new Date();
   start.setDate(today.getDate() - 30);
 
-  const fmt = (d, end = false) => {
+  const fmt = (d) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
-    return `${y}${m}${day}${end ? "2359" : "0000"}`;
+    return `${y}${m}${day}`;
   };
 
   const baseUrl =
@@ -24,9 +24,9 @@ export async function GET() {
     `&numOfRows=100&pageNo=1` +
     `&inqryDiv=1` +
     `&inqryBgnDt=${fmt(start)}` +
-    `&inqryEndDt=${fmt(today, true)}`;
+    `&inqryEndDt=${fmt(today)}`;
 
-  const codes = ["1371029", "9720000"]; // 국립중앙도서관 + 국회도서관
+  const codes = ["1371029", "9720000"];
 
   let allXml = "";
 
