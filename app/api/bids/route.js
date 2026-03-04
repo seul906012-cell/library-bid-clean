@@ -1,3 +1,6 @@
+import { NextResponse } from "next/server";
+import xml2js from "xml2js";
+
 export const dynamic = "force-dynamic";
 
 export async function GET() {
@@ -24,17 +27,25 @@ export async function GET() {
 
   const codes = ["1371029", "9720000"];
 
-  const results = [];
+  let allItems = [];
 
   for (const code of codes) {
     const res = await fetch(`${baseUrl}&dminsttCd=${code}`);
     const xml = await res.text();
-    results.push(xml);
+
+    const parser = new xml2js.Parser({ explicitArray: false });
+    const json = await parser.parseStringPromise(xml);
+
+    const items = json?.response?.body?.items?.item;
+
+    if (items) {
+      if (Array.isArray(items)) {
+        allItems.push(...items);
+      } else {
+        allItems.push(items);
+      }
+    }
   }
 
-  return new Response(JSON.stringify(results), {
-    headers: {
-      "Content-Type": "application/json; charset=utf-8"
-    }
-  });
+  return NextResponse.json(allItems);
 }
