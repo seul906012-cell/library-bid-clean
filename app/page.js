@@ -22,24 +22,24 @@ export default function Home(){
 
   },[]);
 
-  const total = data.length;
-
-  const national = data.filter(
-    i => (i.dminsttNm || "").includes("국립중앙도서관")
-  ).length;
-
-  const assembly = data.filter(
-    i => (i.dminsttNm || "").includes("국회도서관")
-  ).length;
-
   const filtered = data.filter(i =>
     (i.dminsttNm || "").includes("국립중앙도서관") ||
     (i.dminsttNm || "").includes("국회도서관")
   );
 
+  const total = filtered.length;
+
+  const national = filtered.filter(
+    i => (i.dminsttNm || "").includes("국립중앙도서관")
+  ).length;
+
+  const assembly = filtered.filter(
+    i => (i.dminsttNm || "").includes("국회도서관")
+  ).length;
+
   const today = new Date().toISOString().slice(0,10);
 
-  const todayCount = data.filter(i=>{
+  const todayCount = filtered.filter(i=>{
     if(!i.bidNtceDt) return false;
     const date = i.bidNtceDt.split(" ")[0];
     return date === today;
@@ -86,7 +86,7 @@ export default function Home(){
           <li key={i} style={{marginBottom:"10px"}}>
 
             <a
-              href={item.bidNtceUrl}
+              href={item.bidNtceDtlUrl || item.bidNtceUrl}
               target="_blank"
               style={{fontWeight:"bold"}}
             >
