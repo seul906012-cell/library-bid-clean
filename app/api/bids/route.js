@@ -8,35 +8,33 @@ export async function GET(){
 const SERVICE_KEY = process.env.SERVICE_KEY;
 
 const base =
-"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch";
+"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc";
 
 const parser = new xml2js.Parser({ explicitArray:false });
 
 
-/* 날짜 생성 */
+function format(d){
+const y=d.getFullYear();
+const m=String(d.getMonth()+1).padStart(2,"0");
+const day=String(d.getDate()).padStart(2,"0");
+return `${y}${m}${day}`;
+}
+
 
 const today = new Date();
 const start = new Date();
 
 start.setDate(today.getDate()-60);
 
-function format(d,end=false){
-
-const y=d.getFullYear();
-const m=String(d.getMonth()+1).padStart(2,"0");
-const day=String(d.getDate()).padStart(2,"0");
-
-return `${y}${m}${day}${end?"2359":"0000"}`;
-
-}
 
 const baseQuery =
 `ServiceKey=${SERVICE_KEY}
-&numOfRows=200
+&numOfRows=100
 &pageNo=1
 &inqryDiv=1
 &inqryBgnDt=${format(start)}
-&inqryEndDt=${format(today,true)}`.replace(/\n/g,"");
+&inqryEndDt=${format(today)}`
+.replace(/\n/g,"");
 
 
 async function fetchData(url){
@@ -58,11 +56,11 @@ return items;
 /* 기관 조회 */
 
 const national = await fetchData(
-`${base}?${baseQuery}&dminsttCd=1371029`
+`${base}?${baseQuery}&ntceInsttNm=${encodeURIComponent("국립중앙도서관")}`
 );
 
 const assembly = await fetchData(
-`${base}?${baseQuery}&dminsttCd=9720000`
+`${base}?${baseQuery}&ntceInsttNm=${encodeURIComponent("국회도서관")}`
 );
 
 
