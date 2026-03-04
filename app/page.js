@@ -13,9 +13,10 @@ useEffect(()=>{
 
   const load = ()=>{
     fetch("/api/bids")
-    .then(res=>res.json())
-    .then(setData);
-  };
+.then(res=>res.json())
+.then(res=>{
+setData(res.all);
+});
 
   load();
 
