@@ -2,57 +2,102 @@
 
 import { useEffect, useState } from "react";
 
-export default function Home() {
+export default function Home(){
 
-  const [data, setData] = useState([]);
+  const [data,setData] = useState([]);
 
-  useEffect(() => {
-    fetch("/api/bids")
-      .then(res => res.json())
+  useEffect(()=>{
+
+    const load = ()=>{
+      fetch("/api/bids")
+      .then(res=>res.json())
       .then(setData);
-  }, []);
+    };
+
+    load();
+
+    const timer = setInterval(load,300000); // 5분
+
+    return ()=>clearInterval(timer);
+
+  },[]);
 
   const total = data.length;
 
- const national = data.filter(
-  i => (i.dminsttNm || "").includes("국립중앙도서관")
-).length;
+  const national = data.filter(
+    i => (i.dminsttNm || "").includes("국립중앙도서관")
+  ).length;
 
-const assembly = data.filter(
-  i => (i.dminsttNm || "").includes("국회")
-).length;
+  const assembly = data.filter(
+    i => (i.dminsttNm || "").includes("국회")
+  ).length;
 
   const today = new Date().toISOString().slice(0,10);
 
-  const todayCount = data.filter(
-    i => i.bidNtceDt?.startsWith(today)
-  ).length;
+  const todayCount = data.filter(i=>{
+    if(!i.bidNtceDt) return false;
+    const date = i.bidNtceDt.split(" ")[0];
+    return date === today;
+  }).length;
 
-  return (
-    <main style={{padding:"40px", fontFamily:"sans-serif"}}>
+  return(
+
+    <main style={{padding:"40px",fontFamily:"sans-serif"}}>
 
       <h1>국립중앙도서관 · 국회도서관 공고 정보</h1>
 
-      <div style={{display:"flex",gap:"20px",marginTop:"20px"}}>
+      <div style={{
+        display:"flex",
+        gap:"30px",
+        marginTop:"20px",
+        fontSize:"18px"
+      }}>
 
-        <div>전체 공고<br/><b>{total}</b></div>
+        <div>
+          전체 공고<br/>
+          <b>{total}</b>
+        </div>
 
-        <div>국립중앙도서관<br/><b>{national}</b></div>
+        <div>
+          국립중앙도서관<br/>
+          <b>{national}</b>
+        </div>
 
-        <div>국회도서관<br/><b>{assembly}</b></div>
+        <div>
+          국회도서관<br/>
+          <b>{assembly}</b>
+        </div>
 
-        <div>오늘 등록<br/><b>{todayCount}</b></div>
+        <div>
+          오늘 등록<br/>
+          <b>{todayCount}</b>
+        </div>
 
       </div>
 
       <ul style={{marginTop:"40px"}}>
+
         {data.map((item,i)=>(
-          <li key={i}>
-            {item.bidNtceNm} ({item.dminsttNm})
+          <li key={i} style={{marginBottom:"10px"}}>
+
+            <a
+              href={item.bidNtceUrl}
+              target="_blank"
+              style={{fontWeight:"bold"}}
+            >
+              {item.bidNtceNm}
+            </a>
+
+            {" "}
+            ({item.dminsttNm})
+
           </li>
         ))}
+
       </ul>
 
     </main>
+
   );
+
 }
