@@ -6,10 +6,9 @@ const SERVICE_KEY = process.env.SERVICE_KEY;
 
 function getToday() {
   const d = new Date();
-  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}${String(d.getDate()).padStart(2, "0")}`;
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(
+    d.getDate()
+  ).padStart(2, "0")}`;
 }
 
 export async function GET() {
@@ -22,6 +21,7 @@ export async function GET() {
       "&numOfRows=10" +
       "&pageNo=1" +
       "&inqryDiv=1" +
+      "&bidNtceType=용역" +
       `&inqryBgnDt=${today}` +
       `&inqryEndDt=${today}`;
 
