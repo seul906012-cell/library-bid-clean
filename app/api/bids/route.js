@@ -47,10 +47,10 @@ export async function GET() {
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
 
-  // 날짜 설정: 최근 2개월간의 데이터
-  // API 제한 때문에 7일 단위로 나눠서 조회
+  // 날짜 설정: 최근 1개월간의 데이터
+  // API 트래픽 제한을 고려하여 14일 단위로 나눠서 조회
   const today = new Date();
-  const twoMonthsAgo = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
+  const oneMonthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
   
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -59,12 +59,12 @@ export async function GET() {
     return `${year}${month}${day}`;
   };
   
-  // 7일 단위로 날짜 구간 생성
+  // 14일 단위로 날짜 구간 생성 (요청 수 절반으로 감소)
   const dateRanges = [];
-  let currentStart = new Date(twoMonthsAgo);
+  let currentStart = new Date(oneMonthAgo);
   
   while (currentStart < today) {
-    const currentEnd = new Date(currentStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const currentEnd = new Date(currentStart.getTime() + 14 * 24 * 60 * 60 * 1000);
     // 마지막 구간은 오늘까지
     const endDate = currentEnd > today ? today : currentEnd;
     
@@ -76,7 +76,7 @@ export async function GET() {
     currentStart = new Date(currentEnd.getTime() + 1000); // 다음 구간 시작 (1초 후)
   }
   
-  console.log(`Date ranges created: ${dateRanges.length} periods`);
+  console.log(`Date ranges created: ${dateRanges.length} periods (14-day intervals)`);
 
   // 기관코드
   const nationalLibraryCode = "1371029"; // 문화체육관광부 국립중앙도서관
