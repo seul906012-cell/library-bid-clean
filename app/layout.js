@@ -1,3 +1,5 @@
+import './globals.css';
+
 export const metadata = {
   title: "Library Bid Clean",
   description: "Library Bid Dashboard"

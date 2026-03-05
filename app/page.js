@@ -488,98 +488,65 @@ export default function Home() {
       )}
 
 
-      <div style={{
-        display:"flex",
-        gap:"15px",
-        marginBottom:"30px",
-        flexWrap:"wrap"
-      }}>
+      <div className="card-container">
 
 
         <div
           onClick={()=>{setMode("all"); resetPagination();}}
+          className={`category-card ${mode === "all" ? "active" : ""}`}
           style={{
-            flex:"1 1 200px",
-            minWidth:"160px",
             background: mode === "all" ? "rgba(51, 51, 51, 0.08)" : "#fff",
-            padding:"20px",
-            borderRadius:"12px",
-            cursor:"pointer",
             borderTop:"5px solid #333",
-            transition: "all 0.2s ease",
-            transform: mode === "all" ? "translateY(-2px)" : "none",
-            boxShadow: mode === "all" ? "0 4px 12px rgba(0,0,0,0.1)" : "0 2px 4px rgba(0,0,0,0.05)",
-            textAlign: "center"
+            boxShadow: mode === "all" ? "0 4px 12px rgba(0,0,0,0.1)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
-          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "#666" }}>전체 공고</div>
-          <h2 style={{ margin: "0", fontSize: "32px", color: "#333" }}>{totalCount}</h2>
+          <div className="card-label">전체 공고</div>
+          <h2 className="card-count">{totalCount}</h2>
         </div>
 
 
 
         <div
           onClick={()=>{setMode("national"); resetPagination();}}
+          className={`category-card ${mode === "national" ? "active" : ""}`}
           style={{
-            flex:"1 1 200px",
-            minWidth:"160px",
             background: mode === "national" ? "rgba(59, 130, 246, 0.08)" : "#fff",
-            padding:"20px",
-            borderRadius:"12px",
-            cursor:"pointer",
             borderTop:"5px solid #3b82f6",
-            transition: "all 0.2s ease",
-            transform: mode === "national" ? "translateY(-2px)" : "none",
-            boxShadow: mode === "national" ? "0 4px 12px rgba(59, 130, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)",
-            textAlign: "center"
+            boxShadow: mode === "national" ? "0 4px 12px rgba(59, 130, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
-          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "#666" }}>국립중앙도서관</div>
-          <h2 style={{ margin: "0", fontSize: "32px", color: "#333" }}>{nationalCount}</h2>
+          <div className="card-label">국립중앙도서관</div>
+          <h2 className="card-count">{nationalCount}</h2>
         </div>
 
 
 
         <div
           onClick={()=>{setMode("assembly"); resetPagination();}}
+          className={`category-card ${mode === "assembly" ? "active" : ""}`}
           style={{
-            flex:"1 1 200px",
-            minWidth:"160px",
             background: mode === "assembly" ? "rgba(139, 92, 246, 0.08)" : "#fff",
-            padding:"20px",
-            borderRadius:"12px",
-            cursor:"pointer",
             borderTop:"5px solid #8b5cf6",
-            transition: "all 0.2s ease",
-            transform: mode === "assembly" ? "translateY(-2px)" : "none",
-            boxShadow: mode === "assembly" ? "0 4px 12px rgba(139, 92, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)",
-            textAlign: "center"
+            boxShadow: mode === "assembly" ? "0 4px 12px rgba(139, 92, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
-          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "#666" }}>국회도서관</div>
-          <h2 style={{ margin: "0", fontSize: "32px", color: "#333" }}>{assemblyCount}</h2>
+          <div className="card-label">국회도서관</div>
+          <h2 className="card-count">{assemblyCount}</h2>
         </div>
 
 
 
         <div
           onClick={()=>{setMode("keyword"); setKeywordCategory("all"); resetPagination();}}
+          className={`category-card ${mode === "keyword" ? "active" : ""}`}
           style={{
-            flex:"1 1 200px",
-            minWidth:"160px",
             background: mode === "keyword" ? "rgba(16, 185, 129, 0.08)" : "#fff",
-            padding:"20px",
-            borderRadius:"12px",
-            cursor:"pointer",
             borderTop:"5px solid #10b981",
-            transition: "all 0.2s ease",
-            transform: mode === "keyword" ? "translateY(-2px)" : "none",
-            boxShadow: mode === "keyword" ? "0 4px 12px rgba(16, 185, 129, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)",
-            textAlign: "center"
+            boxShadow: mode === "keyword" ? "0 4px 12px rgba(16, 185, 129, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
-          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "8px", color: "#666" }}>키워드</div>
-          <h2 style={{ margin: "0", fontSize: "32px", color: "#333" }}>{keywordCount}</h2>
+          <div className="card-label">키워드</div>
+          <h2 className="card-count">{keywordCount}</h2>
         </div>
 
 
