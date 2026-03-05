@@ -242,10 +242,7 @@ export default function Home() {
         <div style={{
           display: "flex",
           alignItems: "center",
-          padding: "8px 16px",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+          padding: "4px 8px"
         }}>
           <Image 
             src="/logo.png" 
@@ -253,7 +250,8 @@ export default function Home() {
             width={200}
             height={50}
             style={{
-              objectFit: "contain"
+              objectFit: "contain",
+              filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))"
             }}
           />
         </div>
