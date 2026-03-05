@@ -8,8 +8,15 @@ export async function GET() {
   const SERVICE_KEY = process.env.SERVICE_KEY;
 
   // 올바른 엔드포인트 (공공데이터포털에서 확인)
-  const base =
-    "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc";
+  const baseUrl = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService";
+  
+  // 업무구분별 operation (물품, 용역, 공사, 외자)
+  const operations = [
+    "getBidPblancListInfoThng",    // 물품
+    "getBidPblancListInfoServc",   // 용역
+    "getBidPblancListInfoCnstwk",  // 공사
+    "getBidPblancListInfoFrgcpt",  // 외자
+  ];
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
@@ -20,7 +27,7 @@ export async function GET() {
 
       // 디버깅: API 응답 확인
       console.log("API Response Status:", res.status);
-      console.log("API Response (first 500 chars):", xml.substring(0, 500));
+      console.log("API Response (first 200 chars):", xml.substring(0, 200));
 
       // XML이 아닐 경우 (Unexpected errors 등)
       if (!xml || !xml.includes("<response")) {
@@ -30,14 +37,9 @@ export async function GET() {
 
       const json = await parser.parseStringPromise(xml);
 
-      // 디버깅: 파싱된 JSON 구조 확인
-      console.log("Parsed JSON structure:", JSON.stringify(json).substring(0, 500));
-
       let items = json?.response?.body?.items?.item || [];
 
       if (!Array.isArray(items)) items = [items];
-
-      console.log("Items count:", items.length);
 
       return items;
     } catch (err) {
@@ -50,13 +52,22 @@ export async function GET() {
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
 
-  // SERVICE_KEY를 URL 인코딩 (특수문자가 있을 경우 필수)
-  const encodedKey = encodeURIComponent(SERVICE_KEY);
-  const query = `serviceKey=${encodedKey}&numOfRows=200&pageNo=1`;
+  // SERVICE_KEY를 URL 인코딩하지 않음 (문서에서 확인)
+  const query = `inqryDiv=1&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
 
-  /* 전체 목록 가져오기 */
-
-  const items = await fetchData(`${base}?${query}`);
+  /* 모든 업무구분에서 데이터 가져오기 */
+  
+  const allItems = [];
+  for (const operation of operations) {
+    const url = `${baseUrl}/${operation}?${query}`;
+    console.log(`Fetching from: ${operation}`);
+    const items = await fetchData(url);
+    allItems.push(...items);
+  }
+  
+  console.log("Total items fetched:", allItems.length);
+  
+  const items = allItems;
 
   /* 기관 필터 */
 
