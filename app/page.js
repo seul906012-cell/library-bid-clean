@@ -182,10 +182,10 @@ export default function Home() {
     }
     
     if(sort === "deadline") {
-      // 마감일순: 입찰 마감일 기준 (빠른 것부터)
+      // 마감일순: 입찰 마감일 기준 (많이 남은 것부터)
       const da = new Date(a.bidClseDt||"9999-12-31");
       const db = new Date(b.bidClseDt||"9999-12-31");
-      return da - db;
+      return db - da;
     }
 
     return 0;
