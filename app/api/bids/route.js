@@ -7,47 +7,37 @@ export async function GET(){
 
 const SERVICE_KEY = process.env.SERVICE_KEY;
 
-const base =
-"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc";
-
-const parser = new xml2js.Parser({ explicitArray:false });
-
-async function fetchData(url){
+const url =
+`https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc
+?serviceKey=${SERVICE_KEY}
+&numOfRows=200
+&pageNo=1`.replace(/\n/g,"");
 
 const res = await fetch(url);
 const xml = await res.text();
 
+const parser = new xml2js.Parser({ explicitArray:false });
 const json = await parser.parseStringPromise(xml);
 
 let items = json?.response?.body?.items?.item || [];
 
 if(!Array.isArray(items)) items=[items];
 
-return items;
 
-}
+/* 기관 필터 */
 
-const query =
-`serviceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1`;
-
-
-/* 국립중앙도서관 */
-
-const national = await fetchData(
-`${base}?${query}&dminsttCd=1371029`
+const national = items.filter(i =>
+(i.dminsttNm || "").includes("국립중앙도서관")
 );
 
-
-/* 국회도서관 */
-
-const assembly = await fetchData(
-`${base}?${query}&dminsttCd=9720000`
+const assembly = items.filter(i =>
+(i.dminsttNm || "").includes("국회도서관")
 );
 
 
 /* 키워드 */
 
-const keywords=[
+const keywords = [
 "도서관",
 "기록물",
 "DB",
@@ -56,50 +46,33 @@ const keywords=[
 "디지털화"
 ];
 
-let keywordData=[];
-
-for(const k of keywords){
-
-const data = await fetchData(
-`${base}?${query}&bidNtceNm=${encodeURIComponent(k)}`
+const keyword = items.filter(i =>
+keywords.some(k =>
+(i.bidNtceNm || "").includes(k)
+)
 );
 
-keywordData = keywordData.concat(data);
 
-}
+/* 전체 */
 
+const map = new Map();
+const all = [];
 
-/* 합치기 */
-
-const all=[
-...national,
-...assembly,
-...keywordData
-];
-
-
-/* 중복 제거 */
-
-const map=new Map();
-const unique=[];
-
-for(const item of all){
+[...national,...assembly,...keyword].forEach(item=>{
 
 if(!map.has(item.bidNtceNo)){
 map.set(item.bidNtceNo,true);
-unique.push(item);
+all.push(item);
 }
 
-}
+});
 
 
 return NextResponse.json({
-
 national,
 assembly,
-keyword:keywordData,
-all:unique
-
+keyword,
+all
 });
 
 }
