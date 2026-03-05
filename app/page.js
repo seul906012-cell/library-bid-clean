@@ -278,19 +278,23 @@ export default function Home() {
           ].map((period) => (
             <button
               key={period.days}
-              onClick={() => setSelectedPeriod(period.days)}
+              onClick={() => {
+                setSelectedPeriod(period.days);
+                load(period.days);
+              }}
               disabled={loading}
               style={{
-                padding: "8px 16px",
-                fontSize: "14px",
+                padding: "10px 20px",
+                fontSize: "15px",
                 fontWeight: selectedPeriod === period.days ? "600" : "500",
                 backgroundColor: selectedPeriod === period.days ? "#3b82f6" : "#fff",
                 color: selectedPeriod === period.days ? "#fff" : "#333",
                 border: selectedPeriod === period.days ? "none" : "1px solid #ddd",
-                borderRadius: "6px",
+                borderRadius: "8px",
                 cursor: loading ? "not-allowed" : "pointer",
                 transition: "all 0.2s",
-                opacity: loading ? 0.6 : 1
+                opacity: loading ? 0.6 : 1,
+                boxShadow: selectedPeriod === period.days ? "0 2px 4px rgba(59, 130, 246, 0.3)" : "none"
               }}
               onMouseOver={(e) => {
                 if (!loading && selectedPeriod !== period.days) {
@@ -308,7 +312,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* 조회 버튼 */}
+        {/* 재조회 버튼 (선택사항) */}
         <div style={{
           display: "flex",
           gap: "10px",
@@ -318,27 +322,27 @@ export default function Home() {
             onClick={() => load(selectedPeriod)}
             disabled={loading}
             style={{
-              padding: "12px 24px",
-              fontSize: "16px",
-              fontWeight: "600",
-              backgroundColor: loading ? "#ccc" : "#3b82f6",
+              padding: "8px 16px",
+              fontSize: "14px",
+              fontWeight: "500",
+              backgroundColor: loading ? "#ccc" : "#6b7280",
               color: "#fff",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "6px",
               cursor: loading ? "not-allowed" : "pointer",
               transition: "all 0.3s",
               display: "flex",
               alignItems: "center",
-              gap: "8px"
+              gap: "6px"
             }}
             onMouseOver={(e) => {
-              if (!loading) e.target.style.backgroundColor = "#2563eb";
+              if (!loading) e.target.style.backgroundColor = "#4b5563";
             }}
             onMouseOut={(e) => {
-              if (!loading) e.target.style.backgroundColor = "#3b82f6";
+              if (!loading) e.target.style.backgroundColor = "#6b7280";
             }}
           >
-            {loading ? "🔄 조회 중..." : "🔍 최신 공고 조회"}
+            {loading ? "🔄 조회 중..." : "🔄 재조회"}
           </button>
           
           {data.length > 0 && !loading && (
