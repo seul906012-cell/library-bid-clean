@@ -17,22 +17,37 @@ export async function GET() {
       const res = await fetch(url);
       const xml = await res.text();
 
+      // 디버깅: API 응답 확인
+      console.log("API Response Status:", res.status);
+      console.log("API Response (first 500 chars):", xml.substring(0, 500));
+
       // XML이 아닐 경우 (Unexpected errors 등)
       if (!xml || !xml.includes("<response")) {
+        console.error("Invalid XML response");
         return [];
       }
 
       const json = await parser.parseStringPromise(xml);
 
+      // 디버깅: 파싱된 JSON 구조 확인
+      console.log("Parsed JSON structure:", JSON.stringify(json).substring(0, 500));
+
       let items = json?.response?.body?.items?.item || [];
 
       if (!Array.isArray(items)) items = [items];
 
+      console.log("Items count:", items.length);
+
       return items;
     } catch (err) {
+      console.error("fetchData error:", err);
       return [];
     }
   }
+
+  // 디버깅: SERVICE_KEY 확인
+  console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
+  console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
 
   const query = `serviceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1`;
 
@@ -82,5 +97,10 @@ export async function GET() {
     assembly,
     keyword,
     all,
+    debug: {
+      hasServiceKey: !!SERVICE_KEY,
+      totalItems: items.length,
+      timestamp: new Date().toISOString(),
+    },
   });
 }
