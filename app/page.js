@@ -15,6 +15,11 @@ export default function Home() {
   const [selectedPeriod, setSelectedPeriod] = useState(30); // 기본값: 1개월
   const itemsPerPage = 15;
 
+  // 최초 로드 시 1개월 데이터 자동 조회
+  useEffect(() => {
+    load(30);
+  }, []);
+
   const load = (days = selectedPeriod)=>{
     setLoading(true);
     setLoadingMessage("데이터 로딩 중...");
@@ -312,48 +317,32 @@ export default function Home() {
           ))}
         </div>
 
-        {/* 재조회 버튼 (선택사항) */}
-        <div style={{
-          display: "flex",
-          gap: "10px",
-          alignItems: "center"
-        }}>
-          <button
-            onClick={() => load(selectedPeriod)}
-            disabled={loading}
-            style={{
-              padding: "8px 16px",
-              fontSize: "14px",
-              fontWeight: "500",
-              backgroundColor: loading ? "#ccc" : "#6b7280",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: loading ? "not-allowed" : "pointer",
-              transition: "all 0.3s",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px"
-            }}
-            onMouseOver={(e) => {
-              if (!loading) e.target.style.backgroundColor = "#4b5563";
-            }}
-            onMouseOut={(e) => {
-              if (!loading) e.target.style.backgroundColor = "#6b7280";
-            }}
-          >
-            {loading ? "🔄 조회 중..." : "🔄 재조회"}
-          </button>
-          
-          {data.length > 0 && !loading && (
-            <span style={{
-              color: "#666",
-              fontSize: "14px"
-            }}>
-              {data.length}건의 공고가 표시되고 있습니다
+        {/* 조회 정보 */}
+        {data.length > 0 && !loading && (
+          <div style={{
+            padding: "12px 16px",
+            backgroundColor: "#f0f9ff",
+            borderRadius: "8px",
+            border: "1px solid #bae6fd",
+            fontSize: "14px",
+            color: "#0369a1",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}>
+            <span style={{ fontSize: "16px" }}>📊</span>
+            <span>
+              <strong>{data.length}건</strong>의 공고가 조회되었습니다 
+              <span style={{ color: "#64748b", marginLeft: "8px" }}>({[
+                { label: "1주일", days: 7 },
+                { label: "2주", days: 14 },
+                { label: "1개월", days: 30 },
+                { label: "2개월", days: 60 },
+                { label: "3개월", days: 90 }
+              ].find(p => p.days === selectedPeriod)?.label})</span>
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* 로딩 상태 표시 */}
@@ -408,7 +397,7 @@ export default function Home() {
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>📭</div>
           <h3 style={{ marginBottom: "8px", color: "#495057" }}>공고 데이터가 없습니다</h3>
           <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-            위의 "최신 공고 조회" 버튼을 눌러 데이터를 불러오세요
+            위의 기간 버튼을 눌러 데이터를 조회하세요
           </p>
         </div>
       )}
