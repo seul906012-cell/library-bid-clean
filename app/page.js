@@ -570,7 +570,7 @@ export default function Home() {
           }}>
             📂 키워드 카테고리
           </div>
-          <div style={{
+          <div className="keyword-category-buttons" style={{
             display: "flex",
             gap: "10px",
             flexWrap: "wrap",

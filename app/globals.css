@@ -99,5 +99,19 @@
     font-size: 13px !important;
     white-space: nowrap;
   }
+  
+  /* 모바일 키워드 카테고리 버튼 */
+  .keyword-category-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px !important;
+    justify-items: stretch;
+  }
+  
+  .keyword-category-buttons button {
+    padding: 10px 8px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+  }
 }
 
