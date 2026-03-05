@@ -3,76 +3,84 @@ import xml2js from "xml2js";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(){
+export async function GET() {
 
-const SERVICE_KEY = process.env.SERVICE_KEY;
+  const SERVICE_KEY = process.env.SERVICE_KEY;
 
-const url =
-`https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc
-?serviceKey=${SERVICE_KEY}
-&numOfRows=200
-&pageNo=1`.replace(/\n/g,"");
+  const base =
+    "https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc";
 
-const res = await fetch(url);
-const xml = await res.text();
+  const parser = new xml2js.Parser({ explicitArray: false });
 
-const parser = new xml2js.Parser({ explicitArray:false });
-const json = await parser.parseStringPromise(xml);
+  async function fetchData(url) {
+    try {
+      const res = await fetch(url);
+      const xml = await res.text();
 
-let items = json?.response?.body?.items?.item || [];
+      // XML이 아닐 경우 (Unexpected errors 등)
+      if (!xml || !xml.includes("<response")) {
+        return [];
+      }
 
-if(!Array.isArray(items)) items=[items];
+      const json = await parser.parseStringPromise(xml);
 
+      let items = json?.response?.body?.items?.item || [];
 
-/* 기관 필터 */
+      if (!Array.isArray(items)) items = [items];
 
-const national = items.filter(i =>
-(i.dminsttNm || "").includes("국립중앙도서관")
-);
+      return items;
+    } catch (err) {
+      return [];
+    }
+  }
 
-const assembly = items.filter(i =>
-(i.dminsttNm || "").includes("국회도서관")
-);
+  const query = `serviceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1`;
 
+  /* 전체 목록 가져오기 */
 
-/* 키워드 */
+  const items = await fetchData(`${base}?${query}`);
 
-const keywords = [
-"도서관",
-"기록물",
-"DB",
-"DB구축",
-"디지털",
-"디지털화"
-];
+  /* 기관 필터 */
 
-const keyword = items.filter(i =>
-keywords.some(k =>
-(i.bidNtceNm || "").includes(k)
-)
-);
+  const national = items.filter(
+    (i) => (i.dminsttNm || "").includes("국립중앙도서관")
+  );
 
+  const assembly = items.filter(
+    (i) => (i.dminsttNm || "").includes("국회도서관")
+  );
 
-/* 전체 */
+  /* 키워드 필터 */
 
-const map = new Map();
-const all = [];
+  const keywords = [
+    "도서관",
+    "기록물",
+    "DB",
+    "DB구축",
+    "디지털",
+    "디지털화",
+  ];
 
-[...national,...assembly,...keyword].forEach(item=>{
+  const keyword = items.filter((i) =>
+    keywords.some((k) => (i.bidNtceNm || "").includes(k))
+  );
 
-if(!map.has(item.bidNtceNo)){
-map.set(item.bidNtceNo,true);
-all.push(item);
-}
+  /* 전체 합치기 */
 
-});
+  const map = new Map();
+  const all = [];
 
+  [...national, ...assembly, ...keyword].forEach((item) => {
+    if (!map.has(item.bidNtceNo)) {
+      map.set(item.bidNtceNo, true);
+      all.push(item);
+    }
+  });
 
-return NextResponse.json({
-national,
-assembly,
-keyword,
-all
-});
-
+  return NextResponse.json({
+    national,
+    assembly,
+    keyword,
+    all,
+  });
 }
