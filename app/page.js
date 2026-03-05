@@ -219,9 +219,47 @@ export default function Home() {
       minHeight:"100vh"
     }}>
 
-      <h1 style={{marginBottom:"20px"}}>
-        📚 국립중앙도서관 · 국회도서관 공고 정보
-      </h1>
+      {/* 헤더 */}
+      <header style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "30px",
+        paddingBottom: "20px",
+        borderBottom: "2px solid #e5e7eb"
+      }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: "28px",
+          fontWeight: "700",
+          color: "#1f2937"
+        }}>
+          📚 도서관·기록물 입찰 공고 정보
+        </h1>
+        
+        {/* 로고 */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "10px 20px",
+          background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+          borderRadius: "12px",
+          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+        }}>
+          <div style={{
+            fontSize: "24px"
+          }}>📖</div>
+          <div style={{
+            color: "#fff",
+            fontWeight: "700",
+            fontSize: "18px",
+            letterSpacing: "0.5px"
+          }}>
+            LibraryBid
+          </div>
+        </div>
+      </header>
 
       {/* 조회 버튼 */}
       <div style={{
