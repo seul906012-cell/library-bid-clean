@@ -114,6 +114,13 @@ export default function Home() {
     return name.includes("국회도서관");
   };
 
+  // 카운트 계산용 - 항상 모든 키워드 체크 (필터와 무관)
+  const isKeywordAll = (i)=>{
+    const title=i.bidNtceNm||"";
+    return keywords.some(k=>title.includes(k));
+  };
+
+  // 필터링용 - 현재 선택된 카테고리에 따라 체크
   const isKeyword = (i)=>{
     const title=i.bidNtceNm||"";
     
@@ -132,7 +139,7 @@ export default function Home() {
   let filtered = [];
 
   if(mode==="all"){
-    filtered = data.filter(i=>isNational(i)||isAssembly(i)||isKeyword(i));
+    filtered = data.filter(i=>isNational(i)||isAssembly(i)||isKeywordAll(i));
   }
 
   if(mode==="national"){
@@ -171,14 +178,14 @@ export default function Home() {
 
 
   const totalCount = data.filter(i =>
-    isNational(i)||isAssembly(i)||isKeyword(i)
+    isNational(i)||isAssembly(i)||isKeywordAll(i)
   ).length;
 
   const nationalCount = data.filter(i=>isNational(i)).length;
 
   const assemblyCount = data.filter(i=>isAssembly(i)).length;
 
-  const keywordCount = data.filter(i=>isKeyword(i)).length;
+  const keywordCount = data.filter(i=>isKeywordAll(i)).length;
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
