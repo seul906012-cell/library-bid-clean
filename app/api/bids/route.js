@@ -49,7 +49,9 @@ export async function GET() {
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
 
-  const query = `serviceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1`;
+  // SERVICE_KEY를 URL 인코딩 (특수문자가 있을 경우 필수)
+  const encodedKey = encodeURIComponent(SERVICE_KEY);
+  const query = `serviceKey=${encodedKey}&numOfRows=200&pageNo=1`;
 
   /* 전체 목록 가져오기 */
 
