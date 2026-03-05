@@ -24,6 +24,12 @@ export async function GET() {
       console.log("API Response Status:", res.status);
       console.log("API Response (first 200 chars):", xml.substring(0, 200));
 
+      // API 트래픽 한도 초과 체크
+      if (xml.includes("API token quota exceeded") || xml.includes("quota exceeded")) {
+        console.error("⚠️  API token quota exceeded!");
+        return { error: "QUOTA_EXCEEDED" };
+      }
+
       // XML이 아닐 경우 (Unexpected errors 등)
       if (!xml || !xml.includes("<response")) {
         console.error("Invalid XML response");
@@ -135,9 +141,37 @@ export async function GET() {
   const fetchTime = Date.now() - startTime;
   console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
 
+  // API 트래픽 한도 초과 체크
+  const hasQuotaError = [...nationalResults, ...assemblyResults, ...keywordResults]
+    .flat()
+    .some(item => item && item.error === "QUOTA_EXCEEDED");
+
+  if (hasQuotaError) {
+    console.error("❌ API Quota Exceeded - returning error response");
+    return NextResponse.json({
+      error: "QUOTA_EXCEEDED",
+      message: "API 일일 트래픽 한도를 초과했습니다. 내일 다시 시도해주세요.",
+      national: [],
+      assembly: [],
+      keyword: [],
+      all: [],
+      debug: {
+        hasServiceKey: !!SERVICE_KEY,
+        nationalCount: 0,
+        assemblyCount: 0,
+        keywordCount: 0,
+        totalItems: 0,
+        fetchTimeMs: fetchTime,
+        dateRanges: dateRanges.length,
+        timestamp: new Date().toISOString(),
+        quotaExceeded: true
+      }
+    }, { status: 503 });
+  }
+
   // 결과 병합 및 중복 제거
   console.log(`📊 Processing results...`);
-  const nationalItems = nationalResults.flat();
+  const nationalItems = nationalResults.flat().filter(item => item && !item.error);
   const nationalMap = new Map();
   const national = [];
   nationalItems.forEach((item) => {
@@ -148,7 +182,7 @@ export async function GET() {
   });
   console.log(`National library: ${nationalItems.length} total, ${national.length} unique`);
 
-  const assemblyItems = assemblyResults.flat();
+  const assemblyItems = assemblyResults.flat().filter(item => item && !item.error);
   const assemblyMap = new Map();
   const assembly = [];
   assemblyItems.forEach((item) => {
@@ -159,7 +193,7 @@ export async function GET() {
   });
   console.log(`Assembly library: ${assemblyItems.length} total, ${assembly.length} unique`);
 
-  const keywordItems = keywordResults.flat();
+  const keywordItems = keywordResults.flat().filter(item => item && !item.error);
 
   // 키워드 검색 결과에서 중복 제거
   const keywordMap = new Map();
