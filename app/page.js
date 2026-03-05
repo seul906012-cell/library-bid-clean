@@ -6,6 +6,7 @@ import Image from "next/image";
 export default function Home() {
 
   const [data,setData] = useState([]);
+  const [fullData, setFullData] = useState([]); // 전체 데이터 저장 (필터링용)
   const [mode,setMode] = useState("all");
   const [keywordCategory, setKeywordCategory] = useState("all"); // 키워드 세부 카테고리
   const [search,setSearch] = useState("");
@@ -56,11 +57,9 @@ export default function Home() {
       
       setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
       
-      if(res.all){
-        setData(res.all);
-      }else{
-        setData(res);
-      }
+      const allData = res.all ? res.all : res;
+      setFullData(allData); // 전체 데이터 저장
+      setData(allData); // 현재 표시 데이터
       
       setLoading(false);
       
@@ -79,6 +78,40 @@ export default function Home() {
       
       // 에러 메시지는 계속 표시
     });
+  };
+
+  // 날짜 필터링 함수 (클라이언트 사이드)
+  const filterByDays = (days) => {
+    const today = new Date();
+    const cutoffDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+    
+    const filtered = fullData.filter(item => {
+      if (!item.bidNtceDt) return false;
+      const noticeDate = new Date(item.bidNtceDt);
+      return noticeDate >= cutoffDate;
+    });
+    
+    setData(filtered);
+  };
+
+  // 기간 선택 핸들러
+  const handlePeriodChange = (days) => {
+    setSelectedPeriod(days);
+    resetPagination();
+    
+    // 1주(7일), 2주(14일)는 클라이언트 필터링
+    if (days === 7 || days === 14) {
+      if (fullData.length > 0) {
+        filterByDays(days);
+      } else {
+        // fullData가 없으면 API 호출
+        load(30); // 1개월 데이터 로드 후 필터링은 자동으로 됨
+      }
+    } 
+    // 1개월(30일), 2개월(60일), 3개월(90일)은 API 호출
+    else {
+      load(days);
+    }
   };
 
 
@@ -390,10 +423,7 @@ export default function Home() {
           ].map((period) => (
             <button
               key={period.days}
-              onClick={() => {
-                setSelectedPeriod(period.days);
-                load(period.days);
-              }}
+              onClick={() => handlePeriodChange(period.days)}
               disabled={loading}
               style={{
                 padding: "10px 20px",
