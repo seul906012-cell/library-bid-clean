@@ -10,6 +10,8 @@ export default function Home() {
   const [sort,setSort] = useState("latest");
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
 
   const load = ()=>{
     setLoading(true);
@@ -136,6 +138,76 @@ export default function Home() {
 
   const keywordCount = data.filter(i=>isKeyword(i)).length;
 
+  // 페이지네이션 계산
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filtered.slice(startIndex, endIndex);
+
+  // 페이지 변경 시 스크롤 맨 위로
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // 필터/검색 변경 시 첫 페이지로
+  const resetPagination = () => {
+    setCurrentPage(1);
+  };
+
+  // 금액 포맷 함수 (억원 단위)
+  const formatAmount = (amount) => {
+    if (!amount || amount === "0") return "-";
+    const numAmount = parseInt(amount);
+    if (isNaN(numAmount)) return "-";
+    
+    if (numAmount >= 100000000) {
+      return `${(numAmount / 100000000).toFixed(1)}억원`;
+    } else if (numAmount >= 10000) {
+      return `${(numAmount / 10000).toFixed(0)}만원`;
+    } else {
+      return `${numAmount.toLocaleString()}원`;
+    }
+  };
+
+  // 날짜 포맷 함수
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return "-";
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      
+      return `${year}-${month}-${day}`;
+    } catch {
+      return "-";
+    }
+  };
+
+  // D-day 계산 함수
+  const getDday = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+      const closeDate = new Date(dateStr);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      closeDate.setHours(0, 0, 0, 0);
+      
+      const diff = Math.ceil((closeDate - today) / (1000 * 60 * 60 * 24));
+      
+      if (diff < 0) return { text: "마감", color: "#999" };
+      if (diff === 0) return { text: "D-day", color: "#dc2626" };
+      if (diff <= 3) return { text: `D-${diff}`, color: "#dc2626" };
+      if (diff <= 7) return { text: `D-${diff}`, color: "#f59e0b" };
+      return { text: `D-${diff}`, color: "#10b981" };
+    } catch {
+      return null;
+    }
+  };
+
 
 
   return (
@@ -261,7 +333,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>setMode("all")}
+          onClick={()=>{setMode("all"); resetPagination();}}
           style={{
             flex:1,
             background:"#fff",
@@ -278,7 +350,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>setMode("national")}
+          onClick={()=>{setMode("national"); resetPagination();}}
           style={{
             flex:1,
             background:"#fff",
@@ -295,7 +367,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>setMode("assembly")}
+          onClick={()=>{setMode("assembly"); resetPagination();}}
           style={{
             flex:1,
             background:"#fff",
@@ -312,7 +384,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>setMode("keyword")}
+          onClick={()=>{setMode("keyword"); resetPagination();}}
           style={{
             flex:1,
             background:"#fff",
@@ -340,7 +412,7 @@ export default function Home() {
         <input
           placeholder="현재 결과 내 검색"
           value={search}
-          onChange={(e)=>setSearch(e.target.value)}
+          onChange={(e)=>{setSearch(e.target.value); resetPagination();}}
           style={{
             flex:1,
             padding:"10px",
@@ -351,7 +423,7 @@ export default function Home() {
 
         <select
           value={sort}
-          onChange={(e)=>setSort(e.target.value)}
+          onChange={(e)=>{setSort(e.target.value); resetPagination();}}
           style={{
             padding:"10px",
             borderRadius:"8px"
@@ -365,9 +437,20 @@ export default function Home() {
 
 
 
+      {/* 페이지 정보 */}
+      {filtered.length > 0 && (
+        <div style={{
+          marginBottom: "15px",
+          color: "#666",
+          fontSize: "14px"
+        }}>
+          전체 {filtered.length}건 중 {startIndex + 1}~{Math.min(endIndex, filtered.length)}건 표시
+        </div>
+      )}
+
       <div>
 
-        {filtered.map((item,i)=>{
+        {paginatedData.map((item,i)=>{
 
           let color="#999";
 
@@ -375,6 +458,7 @@ export default function Home() {
           else if(isAssembly(item)) color="#8b5cf6";
           else if(isKeyword(item)) color="#10b981";
 
+          const dday = getDday(item.bidClseDt);
 
           return (
 
@@ -389,18 +473,41 @@ export default function Home() {
               }}
             >
 
-              <a
-                href={item.bidNtceUrl}
-                target="_blank"
-                style={{
-                  fontWeight:"bold",
-                  fontSize:"16px",
-                  textDecoration:"none",
-                  color:"#111"
-                }}
-              >
-                {item.bidNtceNm}
-              </a>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "10px"
+              }}>
+                <a
+                  href={item.bidNtceUrl}
+                  target="_blank"
+                  style={{
+                    fontWeight:"bold",
+                    fontSize:"16px",
+                    textDecoration:"none",
+                    color:"#111",
+                    flex: 1
+                  }}
+                >
+                  {item.bidNtceNm}
+                </a>
+                
+                {dday && (
+                  <span style={{
+                    marginLeft: "15px",
+                    padding: "4px 10px",
+                    borderRadius: "6px",
+                    fontSize: "13px",
+                    fontWeight: "600",
+                    backgroundColor: dday.color,
+                    color: "#fff",
+                    whiteSpace: "nowrap"
+                  }}>
+                    {dday.text}
+                  </span>
+                )}
+              </div>
 
               <div style={{
                 marginTop:"6px",
@@ -410,6 +517,21 @@ export default function Home() {
                 📄 {item.dminsttNm||item.ntceInsttNm}
               </div>
 
+              <div style={{
+                marginTop: "10px",
+                display: "flex",
+                gap: "20px",
+                fontSize: "13px",
+                color: "#666"
+              }}>
+                <div>
+                  <span style={{fontWeight: "600", color: "#333"}}>💰 예산:</span> {formatAmount(item.asignBdgtAmt)}
+                </div>
+                <div>
+                  <span style={{fontWeight: "600", color: "#333"}}>📅 입찰마감:</span> {formatDate(item.bidClseDt)}
+                </div>
+              </div>
+
             </div>
 
           );
@@ -417,6 +539,82 @@ export default function Home() {
         })}
 
       </div>
+
+      {/* 페이지네이션 */}
+      {totalPages > 1 && (
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "10px",
+          marginTop: "30px",
+          marginBottom: "30px"
+        }}>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "6px",
+              border: "1px solid #ddd",
+              background: currentPage === 1 ? "#f5f5f5" : "#fff",
+              color: currentPage === 1 ? "#999" : "#333",
+              cursor: currentPage === 1 ? "not-allowed" : "pointer",
+              fontWeight: "500"
+            }}
+          >
+            ← 이전
+          </button>
+
+          <div style={{ display: "flex", gap: "5px" }}>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+              // 현재 페이지 주변만 표시
+              if (
+                page === 1 ||
+                page === totalPages ||
+                (page >= currentPage - 2 && page <= currentPage + 2)
+              ) {
+                return (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      border: "1px solid #ddd",
+                      background: page === currentPage ? "#3b82f6" : "#fff",
+                      color: page === currentPage ? "#fff" : "#333",
+                      cursor: "pointer",
+                      fontWeight: page === currentPage ? "600" : "400"
+                    }}
+                  >
+                    {page}
+                  </button>
+                );
+              } else if (page === currentPage - 3 || page === currentPage + 3) {
+                return <span key={page} style={{ padding: "8px 4px" }}>...</span>;
+              }
+              return null;
+            })}
+          </div>
+
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "6px",
+              border: "1px solid #ddd",
+              background: currentPage === totalPages ? "#f5f5f5" : "#fff",
+              color: currentPage === totalPages ? "#999" : "#333",
+              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+              fontWeight: "500"
+            }}
+          >
+            다음 →
+          </button>
+        </div>
+      )}
 
     </main>
 
