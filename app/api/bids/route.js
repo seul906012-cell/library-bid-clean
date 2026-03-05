@@ -101,6 +101,7 @@ export async function GET(request) {
     "DB구축",
     "디지털",
     "디지털화",
+    "메타",
   ];
 
   /* 병렬 처리로 속도 개선 */

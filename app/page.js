@@ -88,7 +88,8 @@ export default function Home() {
     "DB",
     "DB구축",
     "디지털",
-    "디지털화"
+    "디지털화",
+    "메타"
   ];
 
 
