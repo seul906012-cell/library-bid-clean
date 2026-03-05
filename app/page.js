@@ -12,15 +12,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPeriod, setSelectedPeriod] = useState(30); // 기본값: 1개월
   const itemsPerPage = 15;
 
-  const load = ()=>{
+  const load = (days = selectedPeriod)=>{
     setLoading(true);
     setLoadingMessage("데이터 로딩 중...");
     
     const startTime = Date.now();
     
-    fetch("/api/bids")
+    fetch(`/api/bids?days=${days}`)
     .then(res => res.json())
     .then(res=>{
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -257,48 +258,98 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 조회 버튼 */}
+      {/* 조회 버튼 및 기간 선택 */}
       <div style={{
-        marginBottom: "20px",
-        display: "flex",
-        gap: "10px",
-        alignItems: "center"
+        marginBottom: "20px"
       }}>
-        <button
-          onClick={load}
-          disabled={loading}
-          style={{
-            padding: "12px 24px",
-            fontSize: "16px",
-            fontWeight: "600",
-            backgroundColor: loading ? "#ccc" : "#3b82f6",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "all 0.3s",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}
-          onMouseOver={(e) => {
-            if (!loading) e.target.style.backgroundColor = "#2563eb";
-          }}
-          onMouseOut={(e) => {
-            if (!loading) e.target.style.backgroundColor = "#3b82f6";
-          }}
-        >
-          {loading ? "🔄 조회 중..." : "🔍 최신 공고 조회"}
-        </button>
-        
-        {data.length > 0 && !loading && (
-          <span style={{
-            color: "#666",
-            fontSize: "14px"
-          }}>
-            {data.length}건의 공고가 표시되고 있습니다
-          </span>
-        )}
+        {/* 기간 선택 버튼들 */}
+        <div style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "15px",
+          flexWrap: "wrap"
+        }}>
+          {[
+            { label: "1주일", days: 7 },
+            { label: "2주", days: 14 },
+            { label: "1개월", days: 30 },
+            { label: "2개월", days: 60 },
+            { label: "3개월", days: 90 }
+          ].map((period) => (
+            <button
+              key={period.days}
+              onClick={() => setSelectedPeriod(period.days)}
+              disabled={loading}
+              style={{
+                padding: "8px 16px",
+                fontSize: "14px",
+                fontWeight: selectedPeriod === period.days ? "600" : "500",
+                backgroundColor: selectedPeriod === period.days ? "#3b82f6" : "#fff",
+                color: selectedPeriod === period.days ? "#fff" : "#333",
+                border: selectedPeriod === period.days ? "none" : "1px solid #ddd",
+                borderRadius: "6px",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.2s",
+                opacity: loading ? 0.6 : 1
+              }}
+              onMouseOver={(e) => {
+                if (!loading && selectedPeriod !== period.days) {
+                  e.target.style.backgroundColor = "#f3f4f6";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (selectedPeriod !== period.days) {
+                  e.target.style.backgroundColor = "#fff";
+                }
+              }}
+            >
+              {period.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 조회 버튼 */}
+        <div style={{
+          display: "flex",
+          gap: "10px",
+          alignItems: "center"
+        }}>
+          <button
+            onClick={() => load(selectedPeriod)}
+            disabled={loading}
+            style={{
+              padding: "12px 24px",
+              fontSize: "16px",
+              fontWeight: "600",
+              backgroundColor: loading ? "#ccc" : "#3b82f6",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: loading ? "not-allowed" : "pointer",
+              transition: "all 0.3s",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px"
+            }}
+            onMouseOver={(e) => {
+              if (!loading) e.target.style.backgroundColor = "#2563eb";
+            }}
+            onMouseOut={(e) => {
+              if (!loading) e.target.style.backgroundColor = "#3b82f6";
+            }}
+          >
+            {loading ? "🔄 조회 중..." : "🔍 최신 공고 조회"}
+          </button>
+          
+          {data.length > 0 && !loading && (
+            <span style={{
+              color: "#666",
+              fontSize: "14px"
+            }}>
+              {data.length}건의 공고가 표시되고 있습니다
+            </span>
+          )}
+        </div>
       </div>
 
       {/* 로딩 상태 표시 */}
