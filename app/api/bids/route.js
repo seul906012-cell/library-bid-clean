@@ -7,8 +7,9 @@ export async function GET() {
 
   const SERVICE_KEY = process.env.SERVICE_KEY;
 
+  // 올바른 엔드포인트 (공공데이터포털에서 확인)
   const base =
-    "https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc";
+    "https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc";
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
