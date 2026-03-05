@@ -275,7 +275,7 @@ export default function Home() {
           flexWrap: "wrap"
         }}>
           {[
-            { label: "1주일", days: 7 },
+            { label: "1주", days: 7 },
             { label: "2주", days: 14 },
             { label: "1개월", days: 30 },
             { label: "2개월", days: 60 },
@@ -334,7 +334,7 @@ export default function Home() {
             <span>
               <strong>{data.length}건</strong>의 공고가 조회되었습니다 
               <span style={{ color: "#64748b", marginLeft: "8px" }}>({[
-                { label: "1주일", days: 7 },
+                { label: "1주", days: 7 },
                 { label: "2주", days: 14 },
                 { label: "1개월", days: 30 },
                 { label: "2개월", days: 60 },
