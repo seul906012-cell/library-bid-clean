@@ -3,9 +3,13 @@ import xml2js from "xml2js";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request) {
 
   const SERVICE_KEY = process.env.SERVICE_KEY;
+  
+  // URL 파라미터에서 기간 가져오기 (기본값: 30일)
+  const { searchParams } = new URL(request.url);
+  const periodDays = parseInt(searchParams.get('days')) || 30;
 
   // 올바른 엔드포인트 (공공데이터포털에서 확인)
   const baseUrl = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService";
@@ -52,11 +56,12 @@ export async function GET() {
   // 디버깅: SERVICE_KEY 확인
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
+  console.log("Requested period (days):", periodDays);
 
-  // 날짜 설정: 최근 1개월간의 데이터
+  // 날짜 설정: 요청된 기간의 데이터
   // API 트래픽 제한을 고려하여 14일 단위로 나눠서 조회
   const today = new Date();
-  const oneMonthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const startDate = new Date(today.getTime() - periodDays * 24 * 60 * 60 * 1000);
   
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -67,7 +72,7 @@ export async function GET() {
   
   // 14일 단위로 날짜 구간 생성 (요청 수 절반으로 감소)
   const dateRanges = [];
-  let currentStart = new Date(oneMonthAgo);
+  let currentStart = new Date(startDate);
   
   while (currentStart < today) {
     const currentEnd = new Date(currentStart.getTime() + 14 * 24 * 60 * 60 * 1000);
