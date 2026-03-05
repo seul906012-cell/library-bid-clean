@@ -8,8 +8,8 @@ export default function Home() {
   const [mode,setMode] = useState("all");
   const [search,setSearch] = useState("");
   const [sort,setSort] = useState("latest");
-  const [loading, setLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState("데이터 로딩 중...");
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const load = ()=>{
     setLoading(true);
