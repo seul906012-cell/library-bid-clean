@@ -61,30 +61,11 @@ export async function GET() {
   const inqryBgnDt = `${formatDate(weekAgo)}0000`;
   const inqryEndDt = `${formatDate(today)}2359`;
 
-  // SERVICE_KEY를 URL 인코딩하지 않음 (문서에서 확인)
-  const query = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-
-  /* 용역 업무구분에서 데이터 가져오기 */
+  // 기관코드
+  const nationalLibraryCode = "1371029"; // 문화체육관광부 국립중앙도서관
+  const assemblyLibraryCode = "9720000"; // 국회 국회도서관
   
-  const url = `${baseUrl}/${operation}?${query}`;
-  console.log(`Fetching from: ${operation}`);
-  console.log(`Date range: ${inqryBgnDt} ~ ${inqryEndDt}`);
-  const items = await fetchData(url);
-  
-  console.log("Total items fetched:", items.length);
-
-  /* 기관 필터 */
-
-  const national = items.filter(
-    (i) => (i.dminsttNm || "").includes("국립중앙도서관")
-  );
-
-  const assembly = items.filter(
-    (i) => (i.dminsttNm || "").includes("국회도서관")
-  );
-
-  /* 키워드 필터 */
-
+  // 키워드 목록
   const keywords = [
     "도서관",
     "기록물",
@@ -94,9 +75,41 @@ export async function GET() {
     "디지털화",
   ];
 
-  const keyword = items.filter((i) =>
-    keywords.some((k) => (i.bidNtceNm || "").includes(k))
-  );
+  /* 1. 국립중앙도서관 공고 조회 */
+  const nationalQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&dminsttCd=${nationalLibraryCode}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+  const nationalUrl = `${baseUrl}/${operation}?${nationalQuery}`;
+  console.log(`Fetching national library bids...`);
+  const national = await fetchData(nationalUrl);
+  console.log(`National library items: ${national.length}`);
+
+  /* 2. 국회도서관 공고 조회 */
+  const assemblyQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&dminsttCd=${assemblyLibraryCode}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+  const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
+  console.log(`Fetching assembly library bids...`);
+  const assembly = await fetchData(assemblyUrl);
+  console.log(`Assembly library items: ${assembly.length}`);
+
+  /* 3. 키워드로 공고 조회 */
+  const keywordItems = [];
+  for (const kw of keywords) {
+    const kwQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const kwUrl = `${baseUrl}/${operation}?${kwQuery}`;
+    console.log(`Fetching keyword: ${kw}`);
+    const items = await fetchData(kwUrl);
+    console.log(`Keyword "${kw}" items: ${items.length}`);
+    keywordItems.push(...items);
+  }
+
+  // 키워드 검색 결과에서 중복 제거
+  const keywordMap = new Map();
+  const keyword = [];
+  keywordItems.forEach((item) => {
+    if (!keywordMap.has(item.bidNtceNo)) {
+      keywordMap.set(item.bidNtceNo, true);
+      keyword.push(item);
+    }
+  });
+  console.log(`Total unique keyword items: ${keyword.length}`);
 
   /* 전체 합치기 */
 
@@ -117,7 +130,10 @@ export async function GET() {
     all,
     debug: {
       hasServiceKey: !!SERVICE_KEY,
-      totalItems: items.length,
+      nationalCount: national.length,
+      assemblyCount: assembly.length,
+      keywordCount: keyword.length,
+      totalItems: all.length,
       timestamp: new Date().toISOString(),
     },
   });
