@@ -23,7 +23,7 @@ export default function Home() {
 
   const load = (days = selectedPeriod)=>{
     setLoading(true);
-    setLoadingMessage("데이터 로딩 중...");
+    setLoadingMessage("조회 중...");
     setLoadingProgress(0);
     
     const startTime = Date.now();
@@ -72,7 +72,7 @@ export default function Home() {
     .catch(err => {
       clearInterval(progressInterval);
       console.error("Loading error:", err);
-      setLoadingMessage(`❌ ${err.message || "데이터 로딩 실패"}`);
+      setLoadingMessage(`❌ ${err.message || "조회 실패"}`);
       setLoading(false);
       setLoadingProgress(0);
       
