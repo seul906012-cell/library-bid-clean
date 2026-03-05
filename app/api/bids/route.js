@@ -8,10 +8,9 @@ export async function GET(){
 const SERVICE_KEY = process.env.SERVICE_KEY;
 
 const base =
-"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServcPPSSrch";
+"https://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc";
 
 const parser = new xml2js.Parser({ explicitArray:false });
-
 
 function format(d){
 const y=d.getFullYear();
@@ -20,15 +19,12 @@ const day=String(d.getDate()).padStart(2,"0");
 return `${y}${m}${day}`;
 }
 
-
 const today = new Date();
 const start = new Date();
 start.setDate(today.getDate()-60);
 
-
-const baseQuery =
+const query =
 `ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&inqryDiv=1&inqryBgnDt=${format(start)}&inqryEndDt=${format(today)}`;
-
 
 async function fetchData(url){
 
@@ -45,19 +41,17 @@ return items;
 
 }
 
-
-/* 기관 검색 */
+/* 기관 조회 */
 
 const national = await fetchData(
-`${base}?${baseQuery}&srchType=2&ntceInsttNm=${encodeURIComponent("국립중앙도서관")}`
+`${base}?${query}&dminsttCd=1371029`
 );
 
 const assembly = await fetchData(
-`${base}?${baseQuery}&srchType=2&ntceInsttNm=${encodeURIComponent("국회도서관")}`
+`${base}?${query}&dminsttCd=9720000`
 );
 
-
-/* 키워드 검색 */
+/* 키워드 */
 
 const keywords = [
 "도서관",
@@ -73,13 +67,12 @@ let keywordData=[];
 for(const k of keywords){
 
 const data = await fetchData(
-`${base}?${baseQuery}&srchType=1&bidNtceNm=${encodeURIComponent(k)}`
+`${base}?${query}&bidNtceNm=${encodeURIComponent(k)}`
 );
 
 keywordData = keywordData.concat(data);
 
 }
-
 
 /* 전체 합치기 */
 
@@ -89,11 +82,10 @@ const all = [
 ...keywordData
 ];
 
-
 /* 중복 제거 */
 
 const map = new Map();
-const unique = [];
+const unique=[];
 
 for(const item of all){
 
@@ -103,7 +95,6 @@ unique.push(item);
 }
 
 }
-
 
 return NextResponse.json({
 
