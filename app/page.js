@@ -7,6 +7,7 @@ export default function Home() {
 
   const [data,setData] = useState([]);
   const [mode,setMode] = useState("all");
+  const [keywordCategory, setKeywordCategory] = useState("all"); // 키워드 세부 카테고리
   const [search,setSearch] = useState("");
   const [sort,setSort] = useState("latest");
   const [loading, setLoading] = useState(false);
@@ -82,6 +83,14 @@ export default function Home() {
 
 
 
+  // 키워드 카테고리 정의
+  const keywordCategories = {
+    library: ['도서관'],
+    records: ['기록물', '아카이브'],
+    database: ['DB', 'DB구축'],
+    metadata: ['메타']
+  };
+
   const keywords = [
     "도서관",
     "기록물",
@@ -107,6 +116,14 @@ export default function Home() {
 
   const isKeyword = (i)=>{
     const title=i.bidNtceNm||"";
+    
+    // 키워드 모드일 때 세부 카테고리 필터링
+    if(mode === "keyword" && keywordCategory !== "all"){
+      const categoryKeywords = keywordCategories[keywordCategory] || [];
+      return categoryKeywords.some(k=>title.includes(k));
+    }
+    
+    // 기본: 모든 키워드 검색
     return keywords.some(k=>title.includes(k));
   };
 
@@ -534,7 +551,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>{setMode("keyword"); resetPagination();}}
+          onClick={()=>{setMode("keyword"); setKeywordCategory("all"); resetPagination();}}
           style={{
             flex:1,
             background: mode === "keyword" ? "rgba(16, 185, 129, 0.08)" : "#fff",
@@ -554,6 +571,112 @@ export default function Home() {
 
       </div>
 
+
+      {/* 키워드 세부 카테고리 필터 */}
+      {mode === "keyword" && (
+        <div style={{
+          marginBottom: "20px",
+          padding: "20px",
+          background: "#f0fdf4",
+          borderRadius: "12px",
+          border: "2px solid #10b981"
+        }}>
+          <div style={{
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#047857",
+            marginBottom: "12px"
+          }}>
+            📂 키워드 카테고리
+          </div>
+          <div style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap"
+          }}>
+            <button
+              onClick={() => { setKeywordCategory("all"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: keywordCategory === "all" ? "600" : "500",
+                backgroundColor: keywordCategory === "all" ? "#10b981" : "#fff",
+                color: keywordCategory === "all" ? "#fff" : "#333",
+                border: keywordCategory === "all" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => { setKeywordCategory("library"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: keywordCategory === "library" ? "600" : "500",
+                backgroundColor: keywordCategory === "library" ? "#10b981" : "#fff",
+                color: keywordCategory === "library" ? "#fff" : "#333",
+                border: keywordCategory === "library" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              도서관
+            </button>
+            <button
+              onClick={() => { setKeywordCategory("records"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: keywordCategory === "records" ? "600" : "500",
+                backgroundColor: keywordCategory === "records" ? "#10b981" : "#fff",
+                color: keywordCategory === "records" ? "#fff" : "#333",
+                border: keywordCategory === "records" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              기록물 (기록물, 아카이브)
+            </button>
+            <button
+              onClick={() => { setKeywordCategory("database"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: keywordCategory === "database" ? "600" : "500",
+                backgroundColor: keywordCategory === "database" ? "#10b981" : "#fff",
+                color: keywordCategory === "database" ? "#fff" : "#333",
+                border: keywordCategory === "database" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              DB 구축 (DB, DB구축)
+            </button>
+            <button
+              onClick={() => { setKeywordCategory("metadata"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: keywordCategory === "metadata" ? "600" : "500",
+                backgroundColor: keywordCategory === "metadata" ? "#10b981" : "#fff",
+                color: keywordCategory === "metadata" ? "#fff" : "#333",
+                border: keywordCategory === "metadata" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              메타데이터 (메타)
+            </button>
+          </div>
+        </div>
+      )}
 
 
       <div style={{
