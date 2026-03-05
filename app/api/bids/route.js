@@ -93,10 +93,11 @@ export async function GET() {
   ];
 
   /* 병렬 처리로 속도 개선 */
-  console.log(`Starting parallel fetch...`);
+  console.log(`⏳ Starting parallel fetch for ${dateRanges.length} date ranges...`);
   const startTime = Date.now();
 
   // 1. 국립중앙도서관 공고 조회 (모든 날짜 구간 병렬)
+  console.log(`📘 [1/3] Fetching National Library...`);
   const nationalPromises = dateRanges.map(range => {
     const nationalQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${nationalLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const nationalUrl = `${baseUrl}/${operation}?${nationalQuery}`;
@@ -104,6 +105,7 @@ export async function GET() {
   });
 
   // 2. 국회도서관 공고 조회 (모든 날짜 구간 병렬)
+  console.log(`🏛️  [2/3] Fetching Assembly Library...`);
   const assemblyPromises = dateRanges.map(range => {
     const assemblyQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
@@ -111,6 +113,7 @@ export async function GET() {
   });
 
   // 3. 키워드로 공고 조회 (모든 키워드 × 날짜 구간 병렬)
+  console.log(`🔍 [3/3] Fetching Keywords (${keywords.length} keywords)...`);
   const keywordPromises = keywords.flatMap(kw =>
     dateRanges.map(range => {
       const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
@@ -120,6 +123,9 @@ export async function GET() {
   );
 
   // 모든 요청 병렬 실행
+  const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length;
+  console.log(`🚀 Executing ${totalRequests} API requests in parallel...`);
+  
   const [nationalResults, assemblyResults, keywordResults] = await Promise.all([
     Promise.all(nationalPromises),
     Promise.all(assemblyPromises),
@@ -127,9 +133,10 @@ export async function GET() {
   ]);
 
   const fetchTime = Date.now() - startTime;
-  console.log(`All fetches completed in ${fetchTime}ms`);
+  console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
 
   // 결과 병합 및 중복 제거
+  console.log(`📊 Processing results...`);
   const nationalItems = nationalResults.flat();
   const nationalMap = new Map();
   const national = [];
@@ -163,7 +170,7 @@ export async function GET() {
       keyword.push(item);
     }
   });
-  console.log(`Total unique keyword items: ${keyword.length}`);
+  console.log(`Keywords: ${keywordItems.length} total, ${keyword.length} unique`);
 
   /* 전체 합치기 */
 
@@ -176,6 +183,9 @@ export async function GET() {
       all.push(item);
     }
   });
+  
+  console.log(`🎉 Final result: ${all.length} unique items`);
+  console.log(`⏱️  Total processing time: ${(Date.now() - startTime) / 1000}s`);
 
   return NextResponse.json({
     national,

@@ -8,18 +8,40 @@ export default function Home() {
   const [mode,setMode] = useState("all");
   const [search,setSearch] = useState("");
   const [sort,setSort] = useState("latest");
+  const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState("데이터 로딩 중...");
 
   useEffect(()=>{
 
     const load = ()=>{
+      setLoading(true);
+      setLoadingMessage("데이터 로딩 중...");
+      
+      const startTime = Date.now();
+      
       fetch("/api/bids")
       .then(res=>res.json())
       .then(res=>{
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
+        
         if(res.all){
           setData(res.all);
         }else{
           setData(res);
         }
+        
+        setLoading(false);
+        
+        // 2초 후 메시지 숨김
+        setTimeout(() => {
+          setLoadingMessage("");
+        }, 2000);
+      })
+      .catch(err => {
+        console.error("Loading error:", err);
+        setLoadingMessage("데이터 로딩 실패");
+        setLoading(false);
       });
     };
 
@@ -126,6 +148,45 @@ export default function Home() {
       <h1 style={{marginBottom:"20px"}}>
         📚 국립중앙도서관 · 국회도서관 공고 정보
       </h1>
+
+      {/* 로딩 상태 표시 */}
+      {(loading || loadingMessage) && (
+        <div style={{
+          background: loading ? "#fff3cd" : "#d4edda",
+          border: `1px solid ${loading ? "#ffc107" : "#28a745"}`,
+          borderRadius: "8px",
+          padding: "15px",
+          marginBottom: "20px",
+          display: "flex",
+          alignItems: "center",
+          gap: "10px"
+        }}>
+          {loading && (
+            <div style={{
+              width: "20px",
+              height: "20px",
+              border: "3px solid #ffc107",
+              borderTop: "3px solid transparent",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite"
+            }}></div>
+          )}
+          <span style={{
+            fontWeight: "500",
+            color: loading ? "#856404" : "#155724"
+          }}>
+            {loadingMessage}
+          </span>
+        </div>
+      )}
+
+      {/* 스피너 애니메이션 CSS */}
+      <style jsx>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
 
 
 
