@@ -803,25 +803,33 @@ export default function Home() {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "flex-start",
-                marginBottom: "10px"
+                marginBottom: "10px",
+                gap: "10px"
               }}>
-                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
-                  <a
-                    href={item.bidNtceUrl}
-                    target="_blank"
-                    style={{
-                      fontWeight:"bold",
-                      fontSize:"16px",
-                      textDecoration:"none",
-                      color:"#111"
-                    }}
-                  >
-                    {item.bidNtceNm}
-                  </a>
-                  
+                <a
+                  href={item.bidNtceUrl}
+                  target="_blank"
+                  style={{
+                    fontWeight:"bold",
+                    fontSize:"16px",
+                    textDecoration:"none",
+                    color:"#111",
+                    flex: 1,
+                    minWidth: 0
+                  }}
+                >
+                  {item.bidNtceNm}
+                </a>
+                
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  flexShrink: 0
+                }}>
                   {isNew(item.bidNtceDt) && (
                     <span style={{
-                      padding: "2px 8px",
+                      padding: "3px 8px",
                       borderRadius: "4px",
                       fontSize: "11px",
                       fontWeight: "700",
@@ -832,22 +840,21 @@ export default function Home() {
                       NEW
                     </span>
                   )}
+                  
+                  {dday && (
+                    <span style={{
+                      padding: "4px 10px",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      fontWeight: "600",
+                      backgroundColor: dday.color,
+                      color: "#fff",
+                      whiteSpace: "nowrap"
+                    }}>
+                      {dday.text}
+                    </span>
+                  )}
                 </div>
-                
-                {dday && (
-                  <span style={{
-                    marginLeft: "15px",
-                    padding: "4px 10px",
-                    borderRadius: "6px",
-                    fontSize: "13px",
-                    fontWeight: "600",
-                    backgroundColor: dday.color,
-                    color: "#fff",
-                    whiteSpace: "nowrap"
-                  }}>
-                    {dday.text}
-                  </span>
-                )}
               </div>
 
               <div style={{
