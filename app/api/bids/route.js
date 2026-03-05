@@ -12,19 +12,8 @@ const base =
 
 const parser = new xml2js.Parser({ explicitArray:false });
 
-function format(d){
-const y=d.getFullYear();
-const m=String(d.getMonth()+1).padStart(2,"0");
-const day=String(d.getDate()).padStart(2,"0");
-return `${y}${m}${day}`;
-}
-
-const today = new Date();
-const start = new Date();
-start.setDate(today.getDate()-60);
-
 const query =
-`ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&registDtBgn=${format(start)}&registDtEnd=${format(today)}`;
+`ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1`;
 
 async function fetchData(url){
 
@@ -44,18 +33,18 @@ return items;
 /* 국립중앙도서관 */
 
 const national = await fetchData(
-`${base}?${query}&dminsttNm=${encodeURIComponent("국립중앙도서관")}`
+`${base}?${query}&dminsttCd=1371029`
 );
 
 /* 국회도서관 */
 
 const assembly = await fetchData(
-`${base}?${query}&dminsttNm=${encodeURIComponent("국회도서관")}`
+`${base}?${query}&dminsttCd=9720000`
 );
 
 /* 키워드 */
 
-const keywords = [
+const keywords=[
 "도서관",
 "기록물",
 "DB",
