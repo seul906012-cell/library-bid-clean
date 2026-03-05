@@ -11,6 +11,7 @@ export default function Home() {
   const [sort,setSort] = useState("latest");
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(30); // 기본값: 1개월
   const itemsPerPage = 15;
@@ -23,12 +24,24 @@ export default function Home() {
   const load = (days = selectedPeriod)=>{
     setLoading(true);
     setLoadingMessage("데이터 로딩 중...");
+    setLoadingProgress(0);
     
     const startTime = Date.now();
+    
+    // 진행률 시뮬레이션 (실제 API는 스트리밍을 지원하지 않으므로)
+    const progressInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        if (prev >= 90) return 90; // 90%에서 대기
+        return prev + 10;
+      });
+    }, 200);
     
     fetch(`/api/bids?days=${days}`)
     .then(res => res.json())
     .then(res=>{
+      clearInterval(progressInterval);
+      setLoadingProgress(100);
+      
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       
       // API 트래픽 한도 초과 체크
@@ -53,12 +66,15 @@ export default function Home() {
       // 2초 후 메시지 숨김
       setTimeout(() => {
         setLoadingMessage("");
+        setLoadingProgress(0);
       }, 2000);
     })
     .catch(err => {
+      clearInterval(progressInterval);
       console.error("Loading error:", err);
       setLoadingMessage(`❌ ${err.message || "데이터 로딩 실패"}`);
       setLoading(false);
+      setLoadingProgress(0);
       
       // 에러 메시지는 계속 표시
     });
@@ -352,27 +368,72 @@ export default function Home() {
           border: `1px solid ${loading ? "#ffc107" : "#28a745"}`,
           borderRadius: "8px",
           padding: "15px",
-          marginBottom: "20px",
-          display: "flex",
-          alignItems: "center",
-          gap: "10px"
+          marginBottom: "20px"
         }}>
-          {loading && (
-            <div style={{
-              width: "20px",
-              height: "20px",
-              border: "3px solid #ffc107",
-              borderTop: "3px solid transparent",
-              borderRadius: "50%",
-              animation: "spin 1s linear infinite"
-            }}></div>
-          )}
-          <span style={{
-            fontWeight: "500",
-            color: loading ? "#856404" : "#155724"
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: loading ? "10px" : "0"
           }}>
-            {loadingMessage}
-          </span>
+            {loading && (
+              <div style={{
+                width: "20px",
+                height: "20px",
+                border: "3px solid #ffc107",
+                borderTop: "3px solid transparent",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite"
+              }}></div>
+            )}
+            <span style={{
+              fontWeight: "500",
+              color: loading ? "#856404" : "#155724"
+            }}>
+              {loadingMessage}
+            </span>
+          </div>
+          
+          {/* 진행률 표시 */}
+          {loading && (
+            <div>
+              <div style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "5px"
+              }}>
+                <span style={{
+                  fontSize: "12px",
+                  color: "#856404"
+                }}>
+                  진행률
+                </span>
+                <span style={{
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  color: "#856404"
+                }}>
+                  {loadingProgress}%
+                </span>
+              </div>
+              <div style={{
+                width: "100%",
+                height: "8px",
+                backgroundColor: "#fff",
+                borderRadius: "4px",
+                overflow: "hidden",
+                border: "1px solid #ffc107"
+              }}>
+                <div style={{
+                  width: `${loadingProgress}%`,
+                  height: "100%",
+                  backgroundColor: "#ffc107",
+                  transition: "width 0.3s ease"
+                }}></div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -600,8 +661,12 @@ export default function Home() {
                 display: "flex",
                 gap: "20px",
                 fontSize: "13px",
-                color: "#666"
+                color: "#666",
+                flexWrap: "wrap"
               }}>
+                <div>
+                  <span style={{fontWeight: "600", color: "#333"}}>📢 공고일:</span> {formatDate(item.bidNtceDt)}
+                </div>
                 <div>
                   <span style={{fontWeight: "600", color: "#333"}}>💰 예산:</span> {formatAmount(item.asignBdgtAmt)}
                 </div>
