@@ -24,7 +24,7 @@ const start = new Date();
 start.setDate(today.getDate()-60);
 
 const query =
-`ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&inqryDiv=1&inqryBgnDt=${format(start)}&inqryEndDt=${format(today)}`;
+`ServiceKey=${SERVICE_KEY}&numOfRows=200&pageNo=1&registDtBgn=${format(start)}&registDtEnd=${format(today)}`;
 
 async function fetchData(url){
 
@@ -41,14 +41,16 @@ return items;
 
 }
 
-/* 기관 조회 */
+/* 국립중앙도서관 */
 
 const national = await fetchData(
-`${base}?${query}&dminsttCd=1371029`
+`${base}?${query}&dminsttNm=${encodeURIComponent("국립중앙도서관")}`
 );
 
+/* 국회도서관 */
+
 const assembly = await fetchData(
-`${base}?${query}&dminsttCd=9720000`
+`${base}?${query}&dminsttNm=${encodeURIComponent("국회도서관")}`
 );
 
 /* 키워드 */
@@ -74,9 +76,9 @@ keywordData = keywordData.concat(data);
 
 }
 
-/* 전체 합치기 */
+/* 합치기 */
 
-const all = [
+const all=[
 ...national,
 ...assembly,
 ...keywordData
@@ -84,7 +86,7 @@ const all = [
 
 /* 중복 제거 */
 
-const map = new Map();
+const map=new Map();
 const unique=[];
 
 for(const item of all){
