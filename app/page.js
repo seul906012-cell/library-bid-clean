@@ -207,6 +207,31 @@ export default function Home() {
     isKeywordAll(i) && !isNational(i) && !isAssembly(i)
   ).length;
 
+  // 키워드 카테고리별 건수 (국립중앙/국회 제외)
+  const keywordCategoryCounts = {
+    all: keywordCount,
+    library: data.filter(i => {
+      const title = i.bidNtceNm || "";
+      return keywordCategories.library.some(k => title.includes(k)) && 
+             !isNational(i) && !isAssembly(i);
+    }).length,
+    records: data.filter(i => {
+      const title = i.bidNtceNm || "";
+      return keywordCategories.records.some(k => title.includes(k)) && 
+             !isNational(i) && !isAssembly(i);
+    }).length,
+    database: data.filter(i => {
+      const title = i.bidNtceNm || "";
+      return keywordCategories.database.some(k => title.includes(k)) && 
+             !isNational(i) && !isAssembly(i);
+    }).length,
+    metadata: data.filter(i => {
+      const title = i.bidNtceNm || "";
+      return keywordCategories.metadata.some(k => title.includes(k)) && 
+             !isNational(i) && !isAssembly(i);
+    }).length
+  };
+
   // 페이지네이션 계산
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -632,7 +657,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              전체
+              전체 ({keywordCategoryCounts.all})
             </button>
             <button
               onClick={() => { setKeywordCategory("library"); resetPagination(); }}
@@ -648,7 +673,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              도서관
+              도서관 ({keywordCategoryCounts.library})
             </button>
             <button
               onClick={() => { setKeywordCategory("records"); resetPagination(); }}
@@ -664,7 +689,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              기록물
+              기록물 ({keywordCategoryCounts.records})
             </button>
             <button
               onClick={() => { setKeywordCategory("database"); resetPagination(); }}
@@ -680,7 +705,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              DB 구축
+              DB 구축 ({keywordCategoryCounts.database})
             </button>
             <button
               onClick={() => { setKeywordCategory("metadata"); resetPagination(); }}
@@ -696,7 +721,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              메타데이터
+              메타데이터 ({keywordCategoryCounts.metadata})
             </button>
           </div>
         </div>
