@@ -264,7 +264,7 @@ export default function Home() {
     }}>
 
       {/* 헤더 */}
-      <header style={{
+      <header className="mobile-header" style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -286,7 +286,7 @@ export default function Home() {
         </h1>
         
         {/* 로고 */}
-        <div style={{
+        <div className="logo-container" style={{
           display: "flex",
           alignItems: "center"
         }}>
@@ -308,7 +308,7 @@ export default function Home() {
         marginBottom: "20px"
       }}>
         {/* 기간 선택 버튼들 */}
-        <div style={{
+        <div className="period-buttons" style={{
           display: "flex",
           gap: "10px",
           marginBottom: "15px",
