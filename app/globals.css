@@ -104,14 +104,16 @@
   .keyword-category-buttons {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px !important;
+    gap: 6px !important;
     justify-items: stretch;
+    width: 100%;
   }
   
   .keyword-category-buttons button {
-    padding: 10px 8px !important;
-    font-size: 13px !important;
+    padding: 8px 4px !important;
+    font-size: 11px !important;
     white-space: nowrap;
+    min-width: 0;
   }
 }
 

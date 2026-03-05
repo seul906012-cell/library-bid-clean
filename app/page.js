@@ -622,7 +622,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              기록물 (기록물, 아카이브)
+              기록물
             </button>
             <button
               onClick={() => { setKeywordCategory("database"); resetPagination(); }}
@@ -638,7 +638,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              DB 구축 (DB, DB구축)
+              DB 구축
             </button>
             <button
               onClick={() => { setKeywordCategory("metadata"); resetPagination(); }}
@@ -654,7 +654,7 @@ export default function Home() {
                 transition: "all 0.2s"
               }}
             >
-              메타데이터 (메타)
+              메타데이터
             </button>
           </div>
         </div>
