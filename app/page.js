@@ -475,15 +475,18 @@ export default function Home() {
           onClick={()=>{setMode("all"); resetPagination();}}
           style={{
             flex:1,
-            background:"#fff",
+            background: mode === "all" ? "rgba(51, 51, 51, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
             cursor:"pointer",
-            borderTop:"5px solid #333"
+            borderTop:"5px solid #333",
+            transition: "all 0.2s ease",
+            transform: mode === "all" ? "translateY(-2px)" : "none",
+            boxShadow: mode === "all" ? "0 4px 12px rgba(0,0,0,0.1)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
           전체 공고
-          <h2>{totalCount}</h2>
+          <h2 style={{ margin: "10px 0 0 0", fontSize: "32px" }}>{totalCount}</h2>
         </div>
 
 
@@ -492,15 +495,18 @@ export default function Home() {
           onClick={()=>{setMode("national"); resetPagination();}}
           style={{
             flex:1,
-            background:"#fff",
+            background: mode === "national" ? "rgba(59, 130, 246, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
             cursor:"pointer",
-            borderTop:"5px solid #3b82f6"
+            borderTop:"5px solid #3b82f6",
+            transition: "all 0.2s ease",
+            transform: mode === "national" ? "translateY(-2px)" : "none",
+            boxShadow: mode === "national" ? "0 4px 12px rgba(59, 130, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
           국립중앙도서관
-          <h2>{nationalCount}</h2>
+          <h2 style={{ margin: "10px 0 0 0", fontSize: "32px" }}>{nationalCount}</h2>
         </div>
 
 
@@ -509,15 +515,18 @@ export default function Home() {
           onClick={()=>{setMode("assembly"); resetPagination();}}
           style={{
             flex:1,
-            background:"#fff",
+            background: mode === "assembly" ? "rgba(139, 92, 246, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
             cursor:"pointer",
-            borderTop:"5px solid #8b5cf6"
+            borderTop:"5px solid #8b5cf6",
+            transition: "all 0.2s ease",
+            transform: mode === "assembly" ? "translateY(-2px)" : "none",
+            boxShadow: mode === "assembly" ? "0 4px 12px rgba(139, 92, 246, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
           국회도서관
-          <h2>{assemblyCount}</h2>
+          <h2 style={{ margin: "10px 0 0 0", fontSize: "32px" }}>{assemblyCount}</h2>
         </div>
 
 
@@ -526,15 +535,18 @@ export default function Home() {
           onClick={()=>{setMode("keyword"); resetPagination();}}
           style={{
             flex:1,
-            background:"#fff",
+            background: mode === "keyword" ? "rgba(16, 185, 129, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
             cursor:"pointer",
-            borderTop:"5px solid #10b981"
+            borderTop:"5px solid #10b981",
+            transition: "all 0.2s ease",
+            transform: mode === "keyword" ? "translateY(-2px)" : "none",
+            boxShadow: mode === "keyword" ? "0 4px 12px rgba(16, 185, 129, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
           }}
         >
           키워드
-          <h2>{keywordCount}</h2>
+          <h2 style={{ margin: "10px 0 0 0", fontSize: "32px" }}>{keywordCount}</h2>
         </div>
 
 
