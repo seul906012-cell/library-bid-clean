@@ -167,12 +167,28 @@ export default function Home() {
 
   filtered.sort((a,b)=>{
 
-    const da = new Date(a.bidNtceDt||0);
-    const db = new Date(b.bidNtceDt||0);
+    if(sort === "latest") {
+      // 최신순: 공고일 기준
+      const da = new Date(a.bidNtceDt||0);
+      const db = new Date(b.bidNtceDt||0);
+      return db - da;
+    }
+    
+    if(sort === "old") {
+      // 오래된순: 공고일 기준
+      const da = new Date(a.bidNtceDt||0);
+      const db = new Date(b.bidNtceDt||0);
+      return da - db;
+    }
+    
+    if(sort === "deadline") {
+      // 마감일순: 입찰 마감일 기준 (빠른 것부터)
+      const da = new Date(a.bidClseDt||"9999-12-31");
+      const db = new Date(b.bidClseDt||"9999-12-31");
+      return da - db;
+    }
 
-    if(sort==="latest") return db-da;
-
-    return da-db;
+    return 0;
 
   });
 
@@ -258,6 +274,21 @@ export default function Home() {
       return { text: `D-${diff}`, color: "#10b981" };
     } catch {
       return null;
+    }
+  };
+
+  // NEW 배지 체크 함수 (오늘 올라온 공고)
+  const isNew = (dateStr) => {
+    if (!dateStr) return false;
+    try {
+      const noticeDate = new Date(dateStr);
+      const today = new Date();
+      noticeDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      
+      return noticeDate.getTime() === today.getTime();
+    } catch {
+      return false;
     }
   };
 
@@ -699,6 +730,7 @@ export default function Home() {
           }}
         >
           <option value="latest">최신순</option>
+          <option value="deadline">마감일순</option>
           <option value="old">오래된순</option>
         </select>
 
@@ -748,19 +780,34 @@ export default function Home() {
                 alignItems: "flex-start",
                 marginBottom: "10px"
               }}>
-                <a
-                  href={item.bidNtceUrl}
-                  target="_blank"
-                  style={{
-                    fontWeight:"bold",
-                    fontSize:"16px",
-                    textDecoration:"none",
-                    color:"#111",
-                    flex: 1
-                  }}
-                >
-                  {item.bidNtceNm}
-                </a>
+                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <a
+                    href={item.bidNtceUrl}
+                    target="_blank"
+                    style={{
+                      fontWeight:"bold",
+                      fontSize:"16px",
+                      textDecoration:"none",
+                      color:"#111"
+                    }}
+                  >
+                    {item.bidNtceNm}
+                  </a>
+                  
+                  {isNew(item.bidNtceDt) && (
+                    <span style={{
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      backgroundColor: "#ef4444",
+                      color: "#fff",
+                      whiteSpace: "nowrap"
+                    }}>
+                      NEW
+                    </span>
+                  )}
+                </div>
                 
                 {dday && (
                   <span style={{
