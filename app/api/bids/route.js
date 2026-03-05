@@ -47,9 +47,10 @@ export async function GET() {
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
 
-  // 날짜 설정: 최근 7일간의 데이터 (API 제한 때문에 긴 기간은 에러 발생)
+  // 날짜 설정: 최근 2개월간의 데이터
+  // API 제한 때문에 7일 단위로 나눠서 조회
   const today = new Date();
-  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const twoMonthsAgo = new Date(today.getTime() - 60 * 24 * 60 * 60 * 1000);
   
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -58,8 +59,24 @@ export async function GET() {
     return `${year}${month}${day}`;
   };
   
-  const inqryBgnDt = `${formatDate(weekAgo)}0000`;
-  const inqryEndDt = `${formatDate(today)}2359`;
+  // 7일 단위로 날짜 구간 생성
+  const dateRanges = [];
+  let currentStart = new Date(twoMonthsAgo);
+  
+  while (currentStart < today) {
+    const currentEnd = new Date(currentStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+    // 마지막 구간은 오늘까지
+    const endDate = currentEnd > today ? today : currentEnd;
+    
+    dateRanges.push({
+      start: `${formatDate(currentStart)}0000`,
+      end: `${formatDate(endDate)}2359`
+    });
+    
+    currentStart = new Date(currentEnd.getTime() + 1000); // 다음 구간 시작 (1초 후)
+  }
+  
+  console.log(`Date ranges created: ${dateRanges.length} periods`);
 
   // 기관코드
   const nationalLibraryCode = "1371029"; // 문화체육관광부 국립중앙도서관
@@ -75,29 +92,61 @@ export async function GET() {
     "디지털화",
   ];
 
-  /* 1. 국립중앙도서관 공고 조회 */
-  const nationalQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&dminsttCd=${nationalLibraryCode}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-  const nationalUrl = `${baseUrl}/${operation}?${nationalQuery}`;
+  /* 1. 국립중앙도서관 공고 조회 (모든 날짜 구간에서) */
   console.log(`Fetching national library bids...`);
-  const national = await fetchData(nationalUrl);
-  console.log(`National library items: ${national.length}`);
+  const nationalItems = [];
+  for (const range of dateRanges) {
+    const nationalQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${nationalLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const nationalUrl = `${baseUrl}/${operation}?${nationalQuery}`;
+    const items = await fetchData(nationalUrl);
+    nationalItems.push(...items);
+  }
+  console.log(`Total national library items: ${nationalItems.length}`);
+  
+  // 중복 제거
+  const nationalMap = new Map();
+  const national = [];
+  nationalItems.forEach((item) => {
+    if (!nationalMap.has(item.bidNtceNo)) {
+      nationalMap.set(item.bidNtceNo, true);
+      national.push(item);
+    }
+  });
+  console.log(`Unique national library items: ${national.length}`);
 
-  /* 2. 국회도서관 공고 조회 */
-  const assemblyQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&dminsttCd=${assemblyLibraryCode}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-  const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
+  /* 2. 국회도서관 공고 조회 (모든 날짜 구간에서) */
   console.log(`Fetching assembly library bids...`);
-  const assembly = await fetchData(assemblyUrl);
-  console.log(`Assembly library items: ${assembly.length}`);
+  const assemblyItems = [];
+  for (const range of dateRanges) {
+    const assemblyQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
+    const items = await fetchData(assemblyUrl);
+    assemblyItems.push(...items);
+  }
+  console.log(`Total assembly library items: ${assemblyItems.length}`);
+  
+  // 중복 제거
+  const assemblyMap = new Map();
+  const assembly = [];
+  assemblyItems.forEach((item) => {
+    if (!assemblyMap.has(item.bidNtceNo)) {
+      assemblyMap.set(item.bidNtceNo, true);
+      assembly.push(item);
+    }
+  });
+  console.log(`Unique assembly library items: ${assembly.length}`);
 
-  /* 3. 키워드로 공고 조회 */
+  /* 3. 키워드로 공고 조회 (모든 날짜 구간에서) */
+  console.log(`Fetching keyword bids...`);
   const keywordItems = [];
   for (const kw of keywords) {
-    const kwQuery = `inqryDiv=1&inqryBgnDt=${inqryBgnDt}&inqryEndDt=${inqryEndDt}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=100&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-    const kwUrl = `${baseUrl}/${operation}?${kwQuery}`;
-    console.log(`Fetching keyword: ${kw}`);
-    const items = await fetchData(kwUrl);
-    console.log(`Keyword "${kw}" items: ${items.length}`);
-    keywordItems.push(...items);
+    for (const range of dateRanges) {
+      const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+      const kwUrl = `${baseUrl}/${operation}?${kwQuery}`;
+      const items = await fetchData(kwUrl);
+      keywordItems.push(...items);
+    }
+    console.log(`Keyword "${kw}" processed`);
   }
 
   // 키워드 검색 결과에서 중복 제거
