@@ -11,47 +11,37 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("데이터 로딩 중...");
 
-  useEffect(()=>{
-
-    const load = ()=>{
-      setLoading(true);
-      setLoadingMessage("데이터 로딩 중...");
+  const load = ()=>{
+    setLoading(true);
+    setLoadingMessage("데이터 로딩 중...");
+    
+    const startTime = Date.now();
+    
+    fetch("/api/bids")
+    .then(res=>res.json())
+    .then(res=>{
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
       
-      const startTime = Date.now();
+      if(res.all){
+        setData(res.all);
+      }else{
+        setData(res);
+      }
       
-      fetch("/api/bids")
-      .then(res=>res.json())
-      .then(res=>{
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
-        
-        if(res.all){
-          setData(res.all);
-        }else{
-          setData(res);
-        }
-        
-        setLoading(false);
-        
-        // 2초 후 메시지 숨김
-        setTimeout(() => {
-          setLoadingMessage("");
-        }, 2000);
-      })
-      .catch(err => {
-        console.error("Loading error:", err);
-        setLoadingMessage("데이터 로딩 실패");
-        setLoading(false);
-      });
-    };
-
-    load();
-
-    const timer = setInterval(load,300000);
-
-    return ()=>clearInterval(timer);
-
-  },[]);
+      setLoading(false);
+      
+      // 2초 후 메시지 숨김
+      setTimeout(() => {
+        setLoadingMessage("");
+      }, 2000);
+    })
+    .catch(err => {
+      console.error("Loading error:", err);
+      setLoadingMessage("데이터 로딩 실패");
+      setLoading(false);
+    });
+  };
 
 
 
@@ -149,6 +139,50 @@ export default function Home() {
         📚 국립중앙도서관 · 국회도서관 공고 정보
       </h1>
 
+      {/* 조회 버튼 */}
+      <div style={{
+        marginBottom: "20px",
+        display: "flex",
+        gap: "10px",
+        alignItems: "center"
+      }}>
+        <button
+          onClick={load}
+          disabled={loading}
+          style={{
+            padding: "12px 24px",
+            fontSize: "16px",
+            fontWeight: "600",
+            backgroundColor: loading ? "#ccc" : "#3b82f6",
+            color: "#fff",
+            border: "none",
+            borderRadius: "8px",
+            cursor: loading ? "not-allowed" : "pointer",
+            transition: "all 0.3s",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+          onMouseOver={(e) => {
+            if (!loading) e.target.style.backgroundColor = "#2563eb";
+          }}
+          onMouseOut={(e) => {
+            if (!loading) e.target.style.backgroundColor = "#3b82f6";
+          }}
+        >
+          {loading ? "🔄 조회 중..." : "🔍 최신 공고 조회"}
+        </button>
+        
+        {data.length > 0 && !loading && (
+          <span style={{
+            color: "#666",
+            fontSize: "14px"
+          }}>
+            {data.length}건의 공고가 표시되고 있습니다
+          </span>
+        )}
+      </div>
+
       {/* 로딩 상태 표시 */}
       {(loading || loadingMessage) && (
         <div style={{
@@ -188,6 +222,23 @@ export default function Home() {
         }
       `}</style>
 
+      {/* 안내 메시지 (데이터 없을 때) */}
+      {data.length === 0 && !loading && (
+        <div style={{
+          background: "#f8f9fa",
+          border: "2px dashed #dee2e6",
+          borderRadius: "8px",
+          padding: "40px",
+          textAlign: "center",
+          marginBottom: "20px"
+        }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>📭</div>
+          <h3 style={{ marginBottom: "8px", color: "#495057" }}>공고 데이터가 없습니다</h3>
+          <p style={{ color: "#6c757d", marginBottom: "20px" }}>
+            위의 "최신 공고 조회" 버튼을 눌러 데이터를 불러오세요
+          </p>
+        </div>
+      )}
 
 
       <div style={{
