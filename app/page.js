@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function Home() {
 
@@ -241,23 +242,20 @@ export default function Home() {
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "10px",
-          padding: "10px 20px",
-          background: "linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)",
+          padding: "8px 16px",
+          background: "#fff",
           borderRadius: "12px",
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
         }}>
-          <div style={{
-            fontSize: "24px"
-          }}>📖</div>
-          <div style={{
-            color: "#fff",
-            fontWeight: "700",
-            fontSize: "18px",
-            letterSpacing: "0.5px"
-          }}>
-            LibraryBid
-          </div>
+          <Image 
+            src="/logo.png" 
+            alt="데이터클립 로고" 
+            width={200}
+            height={50}
+            style={{
+              objectFit: "contain"
+            }}
+          />
         </div>
       </header>
 
