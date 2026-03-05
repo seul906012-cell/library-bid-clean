@@ -573,7 +573,8 @@ export default function Home() {
           <div style={{
             display: "flex",
             gap: "10px",
-            flexWrap: "wrap"
+            flexWrap: "wrap",
+            justifyContent: "center"
           }}>
             <button
               onClick={() => { setKeywordCategory("all"); resetPagination(); }}
