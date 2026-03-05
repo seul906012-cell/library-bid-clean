@@ -486,7 +486,8 @@ export default function Home() {
       <div style={{
         display:"flex",
         gap:"20px",
-        marginBottom:"30px"
+        marginBottom:"30px",
+        flexWrap:"wrap"
       }}>
 
 
@@ -494,6 +495,7 @@ export default function Home() {
           onClick={()=>{setMode("all"); resetPagination();}}
           style={{
             flex:1,
+            minWidth:"200px",
             background: mode === "all" ? "rgba(51, 51, 51, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
@@ -514,6 +516,7 @@ export default function Home() {
           onClick={()=>{setMode("national"); resetPagination();}}
           style={{
             flex:1,
+            minWidth:"200px",
             background: mode === "national" ? "rgba(59, 130, 246, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
@@ -534,6 +537,7 @@ export default function Home() {
           onClick={()=>{setMode("assembly"); resetPagination();}}
           style={{
             flex:1,
+            minWidth:"200px",
             background: mode === "assembly" ? "rgba(139, 92, 246, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
@@ -554,6 +558,7 @@ export default function Home() {
           onClick={()=>{setMode("keyword"); setKeywordCategory("all"); resetPagination();}}
           style={{
             flex:1,
+            minWidth:"200px",
             background: mode === "keyword" ? "rgba(16, 185, 129, 0.08)" : "#fff",
             padding:"20px",
             borderRadius:"12px",
