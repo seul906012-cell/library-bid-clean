@@ -151,7 +151,8 @@ export default function Home() {
   }
 
   if(mode==="keyword"){
-    filtered = data.filter(i=>isKeyword(i));
+    // 키워드 공고: 국립중앙/국회 제외
+    filtered = data.filter(i=>isKeyword(i) && !isNational(i) && !isAssembly(i));
   }
 
 
@@ -185,7 +186,10 @@ export default function Home() {
 
   const assemblyCount = data.filter(i=>isAssembly(i)).length;
 
-  const keywordCount = data.filter(i=>isKeywordAll(i)).length;
+  // 키워드 카운트: 국립중앙/국회 제외한 순수 키워드만
+  const keywordCount = data.filter(i=>
+    isKeywordAll(i) && !isNational(i) && !isAssembly(i)
+  ).length;
 
   // 페이지네이션 계산
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
