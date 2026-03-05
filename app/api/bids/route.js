@@ -10,13 +10,8 @@ export async function GET() {
   // 올바른 엔드포인트 (공공데이터포털에서 확인)
   const baseUrl = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService";
   
-  // 업무구분별 operation (물품, 용역, 공사, 외자)
-  const operations = [
-    "getBidPblancListInfoThng",    // 물품
-    "getBidPblancListInfoServc",   // 용역
-    "getBidPblancListInfoCnstwk",  // 공사
-    "getBidPblancListInfoFrgcpt",  // 외자
-  ];
+  // 용역만 조회
+  const operation = "getBidPblancListInfoServc";   // 용역
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
@@ -55,19 +50,13 @@ export async function GET() {
   // SERVICE_KEY를 URL 인코딩하지 않음 (문서에서 확인)
   const query = `inqryDiv=1&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
 
-  /* 모든 업무구분에서 데이터 가져오기 */
+  /* 용역 업무구분에서 데이터 가져오기 */
   
-  const allItems = [];
-  for (const operation of operations) {
-    const url = `${baseUrl}/${operation}?${query}`;
-    console.log(`Fetching from: ${operation}`);
-    const items = await fetchData(url);
-    allItems.push(...items);
-  }
+  const url = `${baseUrl}/${operation}?${query}`;
+  console.log(`Fetching from: ${operation}`);
+  const items = await fetchData(url);
   
-  console.log("Total items fetched:", allItems.length);
-  
-  const items = allItems;
+  console.log("Total items fetched:", items.length);
 
   /* 기관 필터 */
 
