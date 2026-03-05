@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const SERVICE_KEY = process.env.SERVICE_KEY;
 
-  const testUrl = `https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc?serviceKey=${SERVICE_KEY}&numOfRows=10&pageNo=1`;
+  // SERVICE_KEY를 URL 인코딩 (특수문자가 있을 경우 필수)
+  const encodedKey = encodeURIComponent(SERVICE_KEY);
+  const testUrl = `https://apis.data.go.kr/1230000/BidPublicInfoService/getBidPblancListInfoServc?serviceKey=${encodedKey}&numOfRows=10&pageNo=1`;
 
   try {
     const res = await fetch(testUrl);
