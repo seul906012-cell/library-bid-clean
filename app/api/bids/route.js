@@ -92,18 +92,45 @@ export async function GET() {
     "디지털화",
   ];
 
-  /* 1. 국립중앙도서관 공고 조회 (모든 날짜 구간에서) */
-  console.log(`Fetching national library bids...`);
-  const nationalItems = [];
-  for (const range of dateRanges) {
+  /* 병렬 처리로 속도 개선 */
+  console.log(`Starting parallel fetch...`);
+  const startTime = Date.now();
+
+  // 1. 국립중앙도서관 공고 조회 (모든 날짜 구간 병렬)
+  const nationalPromises = dateRanges.map(range => {
     const nationalQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${nationalLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const nationalUrl = `${baseUrl}/${operation}?${nationalQuery}`;
-    const items = await fetchData(nationalUrl);
-    nationalItems.push(...items);
-  }
-  console.log(`Total national library items: ${nationalItems.length}`);
-  
-  // 중복 제거
+    return fetchData(nationalUrl);
+  });
+
+  // 2. 국회도서관 공고 조회 (모든 날짜 구간 병렬)
+  const assemblyPromises = dateRanges.map(range => {
+    const assemblyQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
+    return fetchData(assemblyUrl);
+  });
+
+  // 3. 키워드로 공고 조회 (모든 키워드 × 날짜 구간 병렬)
+  const keywordPromises = keywords.flatMap(kw =>
+    dateRanges.map(range => {
+      const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+      const kwUrl = `${baseUrl}/${operation}?${kwQuery}`;
+      return fetchData(kwUrl);
+    })
+  );
+
+  // 모든 요청 병렬 실행
+  const [nationalResults, assemblyResults, keywordResults] = await Promise.all([
+    Promise.all(nationalPromises),
+    Promise.all(assemblyPromises),
+    Promise.all(keywordPromises)
+  ]);
+
+  const fetchTime = Date.now() - startTime;
+  console.log(`All fetches completed in ${fetchTime}ms`);
+
+  // 결과 병합 및 중복 제거
+  const nationalItems = nationalResults.flat();
   const nationalMap = new Map();
   const national = [];
   nationalItems.forEach((item) => {
@@ -112,20 +139,9 @@ export async function GET() {
       national.push(item);
     }
   });
-  console.log(`Unique national library items: ${national.length}`);
+  console.log(`National library: ${nationalItems.length} total, ${national.length} unique`);
 
-  /* 2. 국회도서관 공고 조회 (모든 날짜 구간에서) */
-  console.log(`Fetching assembly library bids...`);
-  const assemblyItems = [];
-  for (const range of dateRanges) {
-    const assemblyQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-    const assemblyUrl = `${baseUrl}/${operation}?${assemblyQuery}`;
-    const items = await fetchData(assemblyUrl);
-    assemblyItems.push(...items);
-  }
-  console.log(`Total assembly library items: ${assemblyItems.length}`);
-  
-  // 중복 제거
+  const assemblyItems = assemblyResults.flat();
   const assemblyMap = new Map();
   const assembly = [];
   assemblyItems.forEach((item) => {
@@ -134,20 +150,9 @@ export async function GET() {
       assembly.push(item);
     }
   });
-  console.log(`Unique assembly library items: ${assembly.length}`);
+  console.log(`Assembly library: ${assemblyItems.length} total, ${assembly.length} unique`);
 
-  /* 3. 키워드로 공고 조회 (모든 날짜 구간에서) */
-  console.log(`Fetching keyword bids...`);
-  const keywordItems = [];
-  for (const kw of keywords) {
-    for (const range of dateRanges) {
-      const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-      const kwUrl = `${baseUrl}/${operation}?${kwQuery}`;
-      const items = await fetchData(kwUrl);
-      keywordItems.push(...items);
-    }
-    console.log(`Keyword "${kw}" processed`);
-  }
+  const keywordItems = keywordResults.flat();
 
   // 키워드 검색 결과에서 중복 제거
   const keywordMap = new Map();
@@ -183,6 +188,8 @@ export async function GET() {
       assemblyCount: assembly.length,
       keywordCount: keyword.length,
       totalItems: all.length,
+      fetchTimeMs: fetchTime,
+      dateRanges: dateRanges.length,
       timestamp: new Date().toISOString(),
     },
   });
