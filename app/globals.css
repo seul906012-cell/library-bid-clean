@@ -7,8 +7,6 @@
 }
 
 .category-card {
-  flex: 1 1 200px;
-  min-width: 160px;
   padding: 20px;
   border-radius: 12px;
   cursor: pointer;
@@ -33,24 +31,16 @@
   color: #333;
 }
 
-/* PC 화면 - 4개 가로 배치 */
-@media (min-width: 900px) {
+/* PC 화면 - 4개 무조건 가로 한 줄 */
+@media (min-width: 768px) {
   .category-card {
-    flex: 1 1 22%;
-    max-width: 280px;
+    flex: 1 1 0;
+    min-width: 0;
   }
 }
 
-/* 태블릿 화면 - 2×2 그리드 */
-@media (min-width: 600px) and (max-width: 899px) {
-  .category-card {
-    flex: 1 1 45%;
-    min-width: 200px;
-  }
-}
-
-/* 모바일 화면 - 2×2 그리드 (작게) */
-@media (max-width: 599px) {
+/* 모바일 화면 - 2×2 그리드 */
+@media (max-width: 767px) {
   .category-card {
     flex: 1 1 calc(50% - 8px);
     min-width: 140px;
