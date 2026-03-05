@@ -18,21 +18,16 @@ export default function Home() {
     const startTime = Date.now();
     
     fetch("/api/bids")
-    .then(res => {
-      if (!res.ok) {
-        return res.json().then(data => {
-          throw new Error(data.message || "데이터 로딩 실패");
-        });
-      }
-      return res.json();
-    })
+    .then(res => res.json())
     .then(res=>{
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       
       // API 트래픽 한도 초과 체크
       if (res.error === "QUOTA_EXCEEDED") {
-        setLoadingMessage("⚠️ API 트래픽 한도 초과: 내일 다시 시도해주세요");
+        setLoadingMessage("⚠️ API 트래픽 한도 초과됨. 공공데이터포털에서 운영계정 전환 확인 필요");
         setLoading(false);
+        
+        // 에러 메시지는 계속 표시
         return;
       }
       
@@ -56,10 +51,7 @@ export default function Home() {
       setLoadingMessage(`❌ ${err.message || "데이터 로딩 실패"}`);
       setLoading(false);
       
-      // 5초 후 에러 메시지 숨김
-      setTimeout(() => {
-        setLoadingMessage("");
-      }, 5000);
+      // 에러 메시지는 계속 표시
     });
   };
 
