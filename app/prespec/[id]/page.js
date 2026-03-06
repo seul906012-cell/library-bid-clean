@@ -52,7 +52,7 @@ export default function PreSpecDetailPage() {
     fetchDetail();
   }, [params.id]);
 
-  // 파일명 가져오기 (클라이언트에서 직접)
+  // 파일명 가져오기 (클라이언트에서 직접, 캐싱 적용)
   useEffect(() => {
     if (!data) return;
     
@@ -63,9 +63,26 @@ export default function PreSpecDetailPage() {
       
       const names = {};
       
+      // localStorage에서 캐시된 파일명 가져오기
+      let cachedFileNames = {};
+      try {
+        const cached = localStorage.getItem('fileNameCache');
+        if (cached) {
+          cachedFileNames = JSON.parse(cached);
+        }
+      } catch (e) {
+        console.warn('Failed to load filename cache:', e);
+      }
+      
       // 병렬로 모든 파일명 가져오기
       await Promise.all(
         attachments.map(async (url, i) => {
+          // 캐시에 있으면 바로 사용
+          if (cachedFileNames[url]) {
+            names[url] = cachedFileNames[url];
+            return;
+          }
+          
           try {
             // 클라이언트에서 직접 요청 시도 (CORS 문제 가능)
             const res = await fetch(url, { 
@@ -110,6 +127,14 @@ export default function PreSpecDetailPage() {
           }
         })
       );
+      
+      // 새로 가져온 파일명을 캐시에 저장
+      try {
+        const updatedCache = { ...cachedFileNames, ...names };
+        localStorage.setItem('fileNameCache', JSON.stringify(updatedCache));
+      } catch (e) {
+        console.warn('Failed to save filename cache:', e);
+      }
       
       setFileNames(names);
     };
