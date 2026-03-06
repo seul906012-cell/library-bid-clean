@@ -318,22 +318,16 @@ export default function PreSpecDetailPage() {
                 gap: "10px"
               }}>
                 {attachments.map((url, idx) => {
-                  // URL에서 파일명 추출
-                  const getFileName = (url) => {
-                    try {
-                      const urlParams = new URLSearchParams(url.split('?')[1]);
-                      const fileType = urlParams.get('fileType');
-                      const fileSeq = urlParams.get('fileSeq');
-                      const regNo = urlParams.get('bfSpecRegNo') || data.bfSpecRgstNo;
-                      
-                      // 기본 파일명 생성
-                      return `사전규격서_${regNo}_${fileSeq || (idx + 1)}.pdf`;
-                    } catch (e) {
-                      return `첨부파일${idx + 1}.pdf`;
-                    }
-                  };
+                  // 첨부파일 번호에 따라 의미있는 이름 지정
+                  const fileNames = [
+                    "제안요청서",
+                    "과업지시서", 
+                    "참고자료",
+                    "첨부문서",
+                    "기타문서"
+                  ];
                   
-                  const fileName = getFileName(url);
+                  const fileName = fileNames[idx] || `첨부문서 ${idx + 1}`;
                   
                   return (
                     <a
