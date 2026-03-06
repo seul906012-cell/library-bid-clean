@@ -1251,9 +1251,11 @@ export default function Home() {
                 <div>
                   <span style={{fontWeight: "600", color: "#333"}}>💰 예산:</span> {formatAmount(item.asignBdgtAmt)}
                 </div>
-                <div>
-                  <span style={{fontWeight: "600", color: "#333"}}>📅 {item.bidClseDt ? '입찰마감' : '의견등록마감'}:</span> {formatDate(item.bidClseDt || item.opninRgstClseDt)}
-                </div>
+                {((item.bidClseDt && item.bidClseDt.trim() !== "") || (item.opninRgstClseDt && item.opninRgstClseDt.trim() !== "")) && (
+                  <div>
+                    <span style={{fontWeight: "600", color: "#333"}}>📅 {item.bidClseDt ? '입찰마감' : '의견등록마감'}:</span> {formatDate(item.bidClseDt || item.opninRgstClseDt)}
+                  </div>
+                )}
               </div>
 
             </div>
