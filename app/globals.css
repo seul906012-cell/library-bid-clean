@@ -158,3 +158,21 @@
   }
 }
 
+/* PC 화면 - 사전규격 카테고리 버튼 (7개 한 줄) */
+@media (min-width: 768px) {
+  .prespec-category-buttons {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    justify-content: center;
+  }
+  
+  .prespec-category-buttons button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    min-width: 0;
+    flex-shrink: 1;
+  }
+}
+
