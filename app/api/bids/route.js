@@ -17,7 +17,7 @@ export async function GET(request) {
   
   // 용역 검색용 operation (목록 조회)
   const operation = "getBidPblancListInfoServcPPSSrch";   // 용역 검색
-  const preSpecOperationByKeyword = "getPublicPrcureThngInfoServc";  // 사전규격 키워드 조회
+  const preSpecOperationByKeyword = "getPublicPrcureThngInfoServcPPSSrch";  // 사전규격 키워드 조회
   const preSpecOperationByInstitution = "getInsttAcctoThngListInfoServc";  // 사전규격 기관별 조회
 
   const parser = new xml2js.Parser({ explicitArray: false });
@@ -163,11 +163,15 @@ export async function GET(request) {
     return fetchData(preSpecUrl_inst);
   });
 
-  // 6. 키워드로 사전규격 조회 - 비활성화
-  // 이유: getInsttAcctoThngListInfoServc는 기관명 검색만 지원
-  // 키워드 검색용 API가 별도로 필요함
-  console.log(`📋 [6/6] Keyword Pre-Specifications - SKIPPED (no keyword search API)`);
-  const keywordPreSpecPromises = [];
+  // 6. 키워드로 사전규격 조회 (모든 키워드 × 날짜 구간 병렬)
+  console.log(`📋 [6/6] Fetching Keyword Pre-Specifications (${keywords.length} keywords)...`);
+  const keywordPreSpecPromises = keywords.flatMap(kw =>
+    dateRanges.map(range => {
+      const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&prdctClsfcNoNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperationByKeyword}?${preSpecQuery}`;
+      return fetchData(preSpecQueryUrl);
+    })
+  );
 
   // 모든 요청 병렬 실행
   const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length 
