@@ -17,7 +17,8 @@ export async function GET(request) {
   
   // 용역 검색용 operation (목록 조회)
   const operation = "getBidPblancListInfoServcPPSSrch";   // 용역 검색
-  const preSpecOperation = "getPublicPrcureThngInfoServc";  // 사전규격 용역 목록 조회
+  const preSpecOperationByKeyword = "getPublicPrcureThngInfoServc";  // 사전규격 키워드 조회
+  const preSpecOperationByInstitution = "getInsttAcctoThngListInfoServc";  // 사전규격 기관별 조회
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
@@ -128,7 +129,7 @@ export async function GET(request) {
   });
 
   // 3. 키워드로 공고 조회 (모든 키워드 × 날짜 구간 병렬)
-  console.log(`🔍 [3/4] Fetching Keywords (${keywords.length} keywords)...`);
+  console.log(`🔍 [3/6] Fetching Keywords (${keywords.length} keywords)...`);
   const keywordPromises = keywords.flatMap(kw =>
     dateRanges.map(range => {
       const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
@@ -137,32 +138,52 @@ export async function GET(request) {
     })
   );
 
-  // 4. 사전규격 공고 조회 (모든 키워드 × 날짜 구간 병렬)
-  console.log(`📋 [4/4] Fetching Pre-Specifications (${keywords.length} keywords)...`);
-  const preSpecPromises = keywords.flatMap(kw =>
+  // 4. 국립중앙도서관 사전규격 조회 (모든 날짜 구간 병렬)
+  console.log(`📘 [4/6] Fetching National Library Pre-Specifications...`);
+  const nationalPreSpecPromises = dateRanges.map(range => {
+    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${nationalLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const preSpecUrl_inst = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
+    return fetchData(preSpecUrl_inst);
+  });
+
+  // 5. 국회도서관 사전규격 조회 (모든 날짜 구간 병렬)
+  console.log(`🏛️  [5/6] Fetching Assembly Library Pre-Specifications...`);
+  const assemblyPreSpecPromises = dateRanges.map(range => {
+    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const preSpecUrl_inst = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
+    return fetchData(preSpecUrl_inst);
+  });
+
+  // 6. 키워드로 사전규격 조회 (모든 키워드 × 날짜 구간 병렬)
+  console.log(`📋 [6/6] Fetching Keyword Pre-Specifications (${keywords.length} keywords)...`);
+  const keywordPreSpecPromises = keywords.flatMap(kw =>
     dateRanges.map(range => {
       const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&stdNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperation}?${preSpecQuery}`;
+      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperationByKeyword}?${preSpecQuery}`;
       return fetchData(preSpecQueryUrl);
     })
   );
 
   // 모든 요청 병렬 실행
-  const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length + preSpecPromises.length;
+  const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length 
+    + nationalPreSpecPromises.length + assemblyPreSpecPromises.length + keywordPreSpecPromises.length;
   console.log(`🚀 Executing ${totalRequests} API requests in parallel...`);
   
-  const [nationalResults, assemblyResults, keywordResults, preSpecResults] = await Promise.all([
+  const [nationalResults, assemblyResults, keywordResults, nationalPreSpecResults, assemblyPreSpecResults, keywordPreSpecResults] = await Promise.all([
     Promise.all(nationalPromises),
     Promise.all(assemblyPromises),
     Promise.all(keywordPromises),
-    Promise.all(preSpecPromises)
+    Promise.all(nationalPreSpecPromises),
+    Promise.all(assemblyPreSpecPromises),
+    Promise.all(keywordPreSpecPromises)
   ]);
 
   const fetchTime = Date.now() - startTime;
   console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
 
   // API 트래픽 한도 초과 체크
-  const hasQuotaError = [...nationalResults, ...assemblyResults, ...keywordResults, ...preSpecResults]
+  const hasQuotaError = [...nationalResults, ...assemblyResults, ...keywordResults, 
+    ...nationalPreSpecResults, ...assemblyPreSpecResults, ...keywordPreSpecResults]
     .flat()
     .some(item => item && item.error === "QUOTA_EXCEEDED");
 
@@ -226,19 +247,23 @@ export async function GET(request) {
   });
   console.log(`Keywords: ${keywordItems.length} total, ${keyword.length} unique`);
 
-  // 사전규격 결과 처리
-  const preSpecItems = preSpecResults.flat().filter(item => item && !item.error);
+  // 사전규격 결과 처리 (국립중앙도서관 + 국회도서관 + 키워드)
+  const nationalPreSpecItems = nationalPreSpecResults.flat().filter(item => item && !item.error);
+  const assemblyPreSpecItems = assemblyPreSpecResults.flat().filter(item => item && !item.error);
+  const keywordPreSpecItems = keywordPreSpecResults.flat().filter(item => item && !item.error);
+  
   const preSpecMap = new Map();
   const preSpec = [];
-  preSpecItems.forEach((item) => {
+  
+  [...nationalPreSpecItems, ...assemblyPreSpecItems, ...keywordPreSpecItems].forEach((item) => {
     // 사전규격은 고유 ID가 다를 수 있으므로 확인 필요
-    const uniqueId = item.stdNo || item.bidNtceNo || item.untyStdNo;
+    const uniqueId = item.stdNo || item.bidNtceNo || item.untyStdNo || item.stdNtceNo;
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       preSpec.push(item);
     }
   });
-  console.log(`Pre-Specifications: ${preSpecItems.length} total, ${preSpec.length} unique`);
+  console.log(`Pre-Specifications: National ${nationalPreSpecItems.length}, Assembly ${assemblyPreSpecItems.length}, Keywords ${keywordPreSpecItems.length}, Total unique ${preSpec.length}`);
 
   /* 전체 합치기 */
 
@@ -246,7 +271,7 @@ export async function GET(request) {
   const all = [];
 
   [...national, ...assembly, ...keyword, ...preSpec].forEach((item) => {
-    const uniqueId = item.bidNtceNo || item.stdNo || item.untyStdNo;
+    const uniqueId = item.bidNtceNo || item.stdNo || item.untyStdNo || item.stdNtceNo;
     if (uniqueId && !map.has(uniqueId)) {
       map.set(uniqueId, true);
       all.push(item);
