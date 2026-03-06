@@ -291,10 +291,29 @@ export default function Home() {
     }
     
     if(sort === "deadline") {
-      // 마감일순: 입찰 마감일/의견등록마감일 기준 (많이 남은 것부터)
-      const da = new Date(a.bidClseDt || a.opninRgstClseDt || "9999-12-31");
-      const db = new Date(b.bidClseDt || b.opninRgstClseDt || "9999-12-31");
-      return db - da;
+      // 마감일순: 입찰 마감일/의견등록마감일 기준 (가까운 것부터)
+      const dateA = a.bidClseDt || a.opninRgstClseDt;
+      const dateB = b.bidClseDt || b.opninRgstClseDt;
+      
+      // 둘 다 마감일이 없으면 순서 유지
+      if (!dateA && !dateB) return 0;
+      
+      // A만 마감일이 없으면 B보다 뒤로 (마감일 없는 것은 맨 아래)
+      if (!dateA || dateA.trim() === "") return 1;
+      
+      // B만 마감일이 없으면 A보다 뒤로
+      if (!dateB || dateB.trim() === "") return -1;
+      
+      // 둘 다 마감일이 있으면 날짜 비교 (가까운 것부터 = 오름차순)
+      const da = new Date(dateA);
+      const db = new Date(dateB);
+      
+      // Invalid Date 처리
+      if (isNaN(da.getTime()) && isNaN(db.getTime())) return 0;
+      if (isNaN(da.getTime())) return 1;
+      if (isNaN(db.getTime())) return -1;
+      
+      return da - db;
     }
 
     return 0;
