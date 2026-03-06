@@ -900,10 +900,13 @@ export default function Home() {
                   href={item.bidNtceUrl || "#"}
                   target={item.bidNtceUrl ? "_blank" : "_self"}
                   onClick={(e) => {
-                    // 사전규격이고 bidNtceUrl이 없으면 PDF 다운로드
+                    // 사전규격이고 bidNtceUrl이 없으면 첫 번째 PDF 다운로드
                     if (!item.bidNtceUrl && item.specDocFileUrl1) {
                       e.preventDefault();
                       window.open(item.specDocFileUrl1, '_blank');
+                    } else if (!item.bidNtceUrl) {
+                      // 링크가 전혀 없으면 클릭 방지
+                      e.preventDefault();
                     }
                   }}
                   style={{
@@ -912,7 +915,8 @@ export default function Home() {
                     textDecoration:"none",
                     color:"#111",
                     flex: 1,
-                    minWidth: 0
+                    minWidth: 0,
+                    cursor: (item.bidNtceUrl || item.specDocFileUrl1) ? "pointer" : "default"
                   }}
                 >
                   {item.bidNtceNm || item.prdctClsfcNoNm}
@@ -969,37 +973,51 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 사전규격 PDF 다운로드 버튼 */}
-              {item.bfSpecRgstNo && !item.bidNtceNo && item.specDocFileUrl1 && (
+              {/* 사전규격 첨부파일 목록 (최대 5개) */}
+              {item.bfSpecRgstNo && !item.bidNtceNo && (
                 <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-                  <a
-                    href={item.specDocFileUrl1}
-                    target="_blank"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      padding: "6px 12px",
-                      backgroundColor: "#f0f9ff",
-                      color: "#0369a1",
-                      border: "1px solid #bae6fd",
-                      borderRadius: "6px",
-                      fontSize: "13px",
-                      fontWeight: "500",
-                      textDecoration: "none",
-                      transition: "all 0.2s"
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.backgroundColor = "#e0f2fe";
-                      e.target.style.borderColor = "#7dd3fc";
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.backgroundColor = "#f0f9ff";
-                      e.target.style.borderColor = "#bae6fd";
-                    }}
-                  >
-                    📄 사전규격 문서 다운로드
-                  </a>
+                  <div style={{ 
+                    display: "flex", 
+                    flexWrap: "wrap", 
+                    gap: "8px" 
+                  }}>
+                    {[1, 2, 3, 4, 5].map((num) => {
+                      const fileUrl = item[`specDocFileUrl${num}`];
+                      if (!fileUrl) return null;
+                      
+                      return (
+                        <a
+                          key={num}
+                          href={fileUrl}
+                          target="_blank"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            padding: "6px 12px",
+                            backgroundColor: "#f0f9ff",
+                            color: "#0369a1",
+                            border: "1px solid #bae6fd",
+                            borderRadius: "6px",
+                            fontSize: "13px",
+                            fontWeight: "500",
+                            textDecoration: "none",
+                            transition: "all 0.2s"
+                          }}
+                          onMouseOver={(e) => {
+                            e.currentTarget.style.backgroundColor = "#e0f2fe";
+                            e.currentTarget.style.borderColor = "#7dd3fc";
+                          }}
+                          onMouseOut={(e) => {
+                            e.currentTarget.style.backgroundColor = "#f0f9ff";
+                            e.currentTarget.style.borderColor = "#bae6fd";
+                          }}
+                        >
+                          📄 첨부파일 {num}
+                        </a>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
