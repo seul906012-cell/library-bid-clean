@@ -52,6 +52,40 @@ export default function PreSpecDetailPage() {
     fetchDetail();
   }, [params.id]);
 
+  // 파일명 가져오기
+  useEffect(() => {
+    if (!data) return;
+    
+    const fetchFileNames = async () => {
+      const attachments = [1, 2, 3, 4, 5]
+        .map(num => data[`specDocFileUrl${num}`])
+        .filter(url => url);
+      
+      const names = {};
+      
+      for (let i = 0; i < attachments.length; i++) {
+        const url = attachments[i];
+        try {
+          const res = await fetch(`/api/filename?url=${encodeURIComponent(url)}`);
+          const json = await res.json();
+          
+          if (json.success && json.filename) {
+            names[url] = json.filename;
+          } else {
+            names[url] = `첨부파일 ${i + 1}`;
+          }
+        } catch (err) {
+          console.error('Failed to fetch filename:', err);
+          names[url] = `첨부파일 ${i + 1}`;
+        }
+      }
+      
+      setFileNames(names);
+    };
+    
+    fetchFileNames();
+  }, [data]);
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "-";
     return dateStr.substring(0, 10).replace(/-/g, ".");
@@ -192,24 +226,6 @@ export default function PreSpecDetailPage() {
     .map(num => data[`specDocFileUrl${num}`])
     .filter(url => url);
 
-  // 파일명 추출 함수 (URL에서 추정)
-  const getFileNameFromUrl = (url, idx) => {
-    try {
-      // URL 파라미터 파싱
-      const urlObj = new URL(url);
-      const params = urlObj.searchParams;
-      const fileSeq = params.get('fileSeq');
-      
-      // fileSeq가 있으면 사용, 없으면 idx+1
-      const seqNum = fileSeq || (idx + 1);
-      
-      // 일반적인 파일명 패턴 (나라장터는 보통 이런 형식)
-      return `첨부파일 ${seqNum}`;
-    } catch (e) {
-      return `첨부파일 ${idx + 1}`;
-    }
-  };
-
   return (
     <div style={{
       minHeight: "100vh",
@@ -337,7 +353,7 @@ export default function PreSpecDetailPage() {
                 gap: "10px"
               }}>
                 {attachments.map((url, idx) => {
-                  const fileName = getFileNameFromUrl(url, idx);
+                  const fileName = fileNames[url] || `첨부파일 ${idx + 1}`;
                   
                   return (
                     <a
