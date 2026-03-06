@@ -272,10 +272,11 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 상세 페이지 URL 생성
-      // 입찰공고와 동일한 /link/ 패턴 사용
+      // 사전규격 공고 검색 페이지로 이동
+      // 나라장터는 사전규격 직접 링크를 지원하지 않으므로
+      // 사전규격 목록에서 해당 등록번호로 검색
       if (item.bfSpecRgstNo) {
-        item.bidNtceUrl = `https://www.g2b.go.kr/link/PRCA001_04/single/?bfSpecRgstNo=${item.bfSpecRgstNo}`;
+        item.bidNtceUrl = `https://www.g2b.go.kr:8101/ep/preparation/prestd/preStdPublList.do?preStdRegNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
