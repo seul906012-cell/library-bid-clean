@@ -3,6 +3,34 @@ import xml2js from "xml2js";
 
 export const dynamic = "force-dynamic";
 
+// 간단한 메모리 캐시 (30분 유효)
+const cache = new Map();
+const CACHE_TTL = 30 * 60 * 1000; // 30분
+
+function getCacheKey(days) {
+  return `bids_${days}`;
+}
+
+function getFromCache(key) {
+  const cached = cache.get(key);
+  if (!cached) return null;
+  
+  const now = Date.now();
+  if (now - cached.timestamp > CACHE_TTL) {
+    cache.delete(key);
+    return null;
+  }
+  
+  return cached.data;
+}
+
+function setCache(key, data) {
+  cache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+}
+
 export async function GET(request) {
 
   const SERVICE_KEY = process.env.SERVICE_KEY;
@@ -10,6 +38,24 @@ export async function GET(request) {
   // URL 파라미터에서 기간 가져오기 (기본값: 30일)
   const { searchParams } = new URL(request.url);
   const periodDays = parseInt(searchParams.get('days')) || 30;
+  
+  // 캐시 확인
+  const cacheKey = getCacheKey(periodDays);
+  const cachedData = getFromCache(cacheKey);
+  
+  if (cachedData) {
+    console.log(`✅ Returning cached data for ${periodDays} days (age: ${Math.floor((Date.now() - cache.get(cacheKey).timestamp) / 1000)}s)`);
+    return NextResponse.json({
+      ...cachedData,
+      debug: {
+        ...cachedData.debug,
+        cached: true,
+        cacheAge: Math.floor((Date.now() - cache.get(cacheKey).timestamp) / 1000),
+      }
+    });
+  }
+  
+  console.log(`🔍 Cache miss for ${periodDays} days, fetching fresh data...`);
 
   // 올바른 엔드포인트 (공공데이터포털에서 확인)
   const baseUrl = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService";
@@ -352,7 +398,7 @@ export async function GET(request) {
   console.log(`🎉 Final result: ${all.length} unique items`);
   console.log(`⏱️  Total processing time: ${(Date.now() - startTime) / 1000}s`);
 
-  return NextResponse.json({
+  const responseData = {
     national,
     assembly,
     keyword,
@@ -368,6 +414,13 @@ export async function GET(request) {
       fetchTimeMs: fetchTime,
       dateRanges: dateRanges.length,
       timestamp: new Date().toISOString(),
+      cached: false,
     },
-  });
+  };
+  
+  // 캐시에 저장
+  setCache(cacheKey, responseData);
+  console.log(`💾 Data cached for ${periodDays} days (TTL: 30 minutes)`);
+
+  return NextResponse.json(responseData);
 }
