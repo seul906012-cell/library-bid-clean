@@ -336,48 +336,15 @@ export default function PreSpecDetailPage() {
               {data.bsnsDivNm || "일반용역"}
             </div>
             
-            <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              gap: "16px",
-              marginBottom: "12px"
+            <h1 style={{
+              fontSize: "24px",
+              fontWeight: "700",
+              color: "#111",
+              marginBottom: "12px",
+              lineHeight: "1.4"
             }}>
-              <h1 style={{
-                fontSize: "24px",
-                fontWeight: "700",
-                color: "#111",
-                lineHeight: "1.4",
-                flex: 1
-              }}>
-                {data.prdctClsfcNoNm}
-              </h1>
-              
-              <a
-                href={`https://www.g2b.go.kr/ep/preparation/prestd/preStdPublList.do?searchType=G&searchWord=${data.bfSpecRgstNo}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#0369a1",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  whiteSpace: "nowrap",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "6px"
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#075985"}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#0369a1"}
-              >
-                🔗 나라장터에서 보기
-              </a>
-            </div>
+              {data.prdctClsfcNoNm}
+            </h1>
 
             <div style={{
               display: "flex",
