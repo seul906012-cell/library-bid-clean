@@ -132,6 +132,8 @@ export default function Home() {
 
   // 키워드 카테고리 정의
   const keywordCategories = {
+    national: ['국립중앙도서관'],  // 사전규격용 추가
+    assembly: ['국회도서관'],      // 사전규격용 추가
     library: ['도서관'],
     records: ['기록물', '아카이브'],
     database: ['DB', 'DB구축'],
@@ -187,15 +189,17 @@ export default function Home() {
   let filtered = [];
 
   if(mode==="all"){
-    filtered = data.filter(i=>isNational(i)||isAssembly(i)||isKeywordAll(i));
+    filtered = data; // 전체 공고
   }
 
   if(mode==="national"){
-    filtered = data.filter(i=>isNational(i));
+    // 국립중앙 입찰공고만 (사전규격 제외)
+    filtered = data.filter(i=>isNational(i) && !(i.bfSpecRgstNo && !i.bidNtceNo));
   }
 
   if(mode==="assembly"){
-    filtered = data.filter(i=>isAssembly(i));
+    // 국회 입찰공고만 (사전규격 제외)
+    filtered = data.filter(i=>isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo));
   }
 
   if(mode==="keyword"){
@@ -204,21 +208,26 @@ export default function Home() {
   }
 
   if(mode==="prespec"){
-    // 키워드 매칭 사전규격만 필터링 (국립중앙/국회 제외)
+    // 모든 사전규격 (국립중앙/국회 포함)
     filtered = data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
-      const isPreSpec = i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
+      const isPreSpec = i.bfSpecRgstNo && !i.bidNtceNo;
       
       if(!isPreSpec) return false;
       
       // 사전규격 세부 카테고리 필터링
+      if(prespecCategory === "national"){
+        return isNational(i);
+      }
+      if(prespecCategory === "assembly"){
+        return isAssembly(i) && !isNational(i);
+      }
       if(prespecCategory !== "all"){
         const categoryKeywords = keywordCategories[prespecCategory] || [];
-        return categoryKeywords.some(k=>title.includes(k));
+        return categoryKeywords.some(k=>title.includes(k)) && !isNational(i) && !isAssembly(i);
       }
       
-      // 기본: 모든 키워드 검색
-      return keywords.some(k=>title.includes(k));
+      return true; // 전체
     });
   }
 
@@ -290,29 +299,29 @@ export default function Home() {
 
 
 
-  const totalCount = data.filter(i =>
-    isNational(i)||isAssembly(i)||isKeywordAll(i)||(i.bfSpecRgstNo && !i.bidNtceNo)
+  const totalCount = data.length;
+
+  // 2. 국립중앙도서관: 입찰공고만 (사전규격 제외)
+  const nationalCount = data.filter(i=>
+    isNational(i) && !(i.bfSpecRgstNo && !i.bidNtceNo)
   ).length;
 
-  // 1. 국립중앙도서관: 입찰공고 + 사전규격 모두 포함
-  const nationalCount = data.filter(i=>isNational(i)).length;
-
-  // 2. 국회도서관: 입찰공고 + 사전규격 모두 포함 (국립중앙 제외)
+  // 3. 국회도서관: 입찰공고만 (사전규격 제외, 국립중앙 제외)
   const assemblyCount = data.filter(i=>
-    isAssembly(i) && !isNational(i)
+    isAssembly(i) && !isNational(i) && !(i.bfSpecRgstNo && !i.bidNtceNo)
   ).length;
 
-  // 3. 키워드: 국립중앙/국회 제외한 키워드 매칭 입찰공고만 (사전규격 제외)
+  // 4. 키워드: 키워드 매칭 입찰공고만 (사전규격 제외, 국립중앙/국회 제외)
   const keywordCount = data.filter(i=>
     isKeywordAll(i) && !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo)
   ).length;
 
-  // 4. 사전규격: 국립중앙/국회 제외한 키워드 매칭 사전규격만
+  // 5. 사전규격: 모든 사전규격 (국립중앙/국회 포함)
   const preSpecCount = data.filter(i=>
-    i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && isKeywordAll(i)
+    i.bfSpecRgstNo && !i.bidNtceNo
   ).length;
 
-  // 키워드 카테고리별 건수 (국립중앙/국회 제외)
+  // 키워드 카테고리별 건수 (입찰공고만, 사전규격 제외)
   const keywordCategoryCounts = {
     all: keywordCount,
     library: data.filter(i => {
@@ -337,9 +346,15 @@ export default function Home() {
     }).length
   };
 
-  // 사전규격 카테고리별 건수 (국립중앙/국회 제외, 키워드 매칭 사전규격만)
+  // 사전규격 카테고리별 건수 (모든 사전규격, 기관 구분 없이)
   const prespecCategoryCounts = {
     all: preSpecCount,
+    national: data.filter(i => {
+      return i.bfSpecRgstNo && !i.bidNtceNo && isNational(i);
+    }).length,
+    assembly: data.filter(i => {
+      return i.bfSpecRgstNo && !i.bidNtceNo && isAssembly(i) && !isNational(i);
+    }).length,
     library: data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.library.some(k => title.includes(k)) && 
@@ -935,6 +950,38 @@ export default function Home() {
               }}
             >
               전체 ({prespecCategoryCounts.all})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("national"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "national" ? "600" : "500",
+                backgroundColor: prespecCategory === "national" ? "#0369a1" : "#fff",
+                color: prespecCategory === "national" ? "#fff" : "#333",
+                border: prespecCategory === "national" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              국립중앙도서관 ({prespecCategoryCounts.national})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("assembly"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "assembly" ? "600" : "500",
+                backgroundColor: prespecCategory === "assembly" ? "#0369a1" : "#fff",
+                color: prespecCategory === "assembly" ? "#fff" : "#333",
+                border: prespecCategory === "assembly" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              국회도서관 ({prespecCategoryCounts.assembly})
             </button>
             <button
               onClick={() => { setPrespecCategory("library"); resetPagination(); }}
