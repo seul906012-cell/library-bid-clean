@@ -1162,6 +1162,21 @@ export default function Home() {
                   }}
                 >
                   {item.bidNtceNm || item.prdctClsfcNoNm}
+                  {/* NEW 배지 */}
+                  {isNew(item) && (
+                    <span style={{
+                      marginLeft: "8px",
+                      padding: "3px 8px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      backgroundColor: "#ef4444",
+                      color: "#fff",
+                      whiteSpace: "nowrap"
+                    }}>
+                      NEW
+                    </span>
+                  )}
                   {/* 사전규격 표시 */}
                   {item.bfSpecRgstNo && !item.bidNtceNo && (
                     <span style={{
@@ -1186,20 +1201,6 @@ export default function Home() {
                   gap: "6px",
                   flexShrink: 0
                 }}>
-                  {isNew(item) && (
-                    <span style={{
-                      padding: "3px 8px",
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      fontWeight: "700",
-                      backgroundColor: "#ef4444",
-                      color: "#fff",
-                      whiteSpace: "nowrap"
-                    }}>
-                      NEW
-                    </span>
-                  )}
-                  
                   {dday && (
                     <span style={{
                       padding: "4px 10px",
