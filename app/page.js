@@ -432,9 +432,15 @@ export default function Home() {
 
   // D-day 계산 함수
   const getDday = (dateStr) => {
-    if (!dateStr) return null;
+    // 빈 문자열이나 null/undefined 체크
+    if (!dateStr || dateStr.trim() === "") return null;
+    
     try {
       const closeDate = new Date(dateStr);
+      
+      // Invalid Date 체크
+      if (isNaN(closeDate.getTime())) return null;
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       closeDate.setHours(0, 0, 0, 0);
