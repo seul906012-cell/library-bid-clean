@@ -272,10 +272,10 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 URL: 임시로 문서 다운로드 링크 사용
-      // TODO: 정확한 상세 페이지 URL 확인 필요
-      if (item.specDocFileUrl1) {
-        item.bidNtceUrl = item.specDocFileUrl1;
+      // 사전규격 공고 상세 페이지 URL 생성
+      // 입찰공고와 동일한 /link/ 패턴 사용
+      if (item.bfSpecRgstNo) {
+        item.bidNtceUrl = `https://www.g2b.go.kr/link/PRCA001_04/single/?bfSpecRgstNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
