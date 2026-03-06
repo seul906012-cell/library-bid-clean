@@ -30,10 +30,11 @@ export async function GET(request) {
       // 디버깅: API 응답 확인
       console.log("API Response Status:", res.status);
       console.log("API Response (first 200 chars):", xml.substring(0, 200));
+      console.log("API URL (first 100 chars):", url.substring(0, 100));
 
       // Unauthorized 체크 (사전규격 API 승인 대기)
       if (xml.includes("Unauthorized") || xml.includes("unauthorized")) {
-        console.error("⚠️  API Unauthorized - waiting for activation");
+        console.error("⚠️  API Unauthorized - waiting for activation. URL:", url.substring(0, 150));
         return [];
       }
 
@@ -45,7 +46,7 @@ export async function GET(request) {
 
       // XML이 아닐 경우 (Unexpected errors 등)
       if (!xml || !xml.includes("<response")) {
-        console.error("Invalid XML response");
+        console.error("Invalid XML response. Status:", res.status, "Response:", xml.substring(0, 300));
         return [];
       }
 
