@@ -9,6 +9,7 @@ export default function Home() {
   const [fullData, setFullData] = useState([]); // 전체 데이터 저장 (필터링용)
   const [mode,setMode] = useState("all");
   const [keywordCategory, setKeywordCategory] = useState("all"); // 키워드 세부 카테고리
+  const [prespecCategory, setPrespecCategory] = useState("all"); // 사전규격 세부 카테고리
   const [search,setSearch] = useState("");
   const [sort,setSort] = useState("latest");
   const [loading, setLoading] = useState(false);
@@ -204,7 +205,21 @@ export default function Home() {
 
   if(mode==="prespec"){
     // 키워드 매칭 사전규격만 필터링 (국립중앙/국회 제외)
-    filtered = data.filter(i=>i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && isKeywordAll(i));
+    filtered = data.filter(i => {
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
+      const isPreSpec = i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
+      
+      if(!isPreSpec) return false;
+      
+      // 사전규격 세부 카테고리 필터링
+      if(prespecCategory !== "all"){
+        const categoryKeywords = keywordCategories[prespecCategory] || [];
+        return categoryKeywords.some(k=>title.includes(k));
+      }
+      
+      // 기본: 모든 키워드 검색
+      return keywords.some(k=>title.includes(k));
+    });
   }
 
 
@@ -303,22 +318,47 @@ export default function Home() {
     library: data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.library.some(k => title.includes(k)) && 
-             !isNational(i) && !isAssembly(i);
+             !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo);
     }).length,
     records: data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.records.some(k => title.includes(k)) && 
-             !isNational(i) && !isAssembly(i);
+             !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo);
     }).length,
     database: data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.database.some(k => title.includes(k)) && 
-             !isNational(i) && !isAssembly(i);
+             !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo);
     }).length,
     metadata: data.filter(i => {
       const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.metadata.some(k => title.includes(k)) && 
-             !isNational(i) && !isAssembly(i);
+             !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo);
+    }).length
+  };
+
+  // 사전규격 카테고리별 건수 (국립중앙/국회 제외, 키워드 매칭 사전규격만)
+  const prespecCategoryCounts = {
+    all: preSpecCount,
+    library: data.filter(i => {
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
+      return keywordCategories.library.some(k => title.includes(k)) && 
+             i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
+    }).length,
+    records: data.filter(i => {
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
+      return keywordCategories.records.some(k => title.includes(k)) && 
+             i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
+    }).length,
+    database: data.filter(i => {
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
+      return keywordCategories.database.some(k => title.includes(k)) && 
+             i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
+    }).length,
+    metadata: data.filter(i => {
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
+      return keywordCategories.metadata.some(k => title.includes(k)) && 
+             i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i);
     }).length
   };
 
@@ -733,7 +773,7 @@ export default function Home() {
 
 
         <div
-          onClick={()=>{setMode("prespec"); resetPagination();}}
+          onClick={()=>{setMode("prespec"); setPrespecCategory("all"); resetPagination();}}
           className={`category-card ${mode === "prespec" ? "active" : ""}`}
           style={{
             background: mode === "prespec" ? "rgba(3, 105, 161, 0.08)" : "#fff",
@@ -851,6 +891,114 @@ export default function Home() {
               }}
             >
               메타데이터 ({keywordCategoryCounts.metadata})
+            </button>
+          </div>
+        </div>
+      )}
+
+
+      {/* 사전규격 세부 카테고리 필터 */}
+      {mode === "prespec" && (
+        <div style={{
+          marginBottom: "20px",
+          padding: "20px",
+          background: "#f0f9ff",
+          borderRadius: "12px",
+          border: "2px solid #0369a1"
+        }}>
+          <div style={{
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#075985",
+            marginBottom: "12px"
+          }}>
+            📂 사전규격 카테고리
+          </div>
+          <div className="prespec-category-buttons" style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+            justifyContent: "center"
+          }}>
+            <button
+              onClick={() => { setPrespecCategory("all"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "all" ? "600" : "500",
+                backgroundColor: prespecCategory === "all" ? "#0369a1" : "#fff",
+                color: prespecCategory === "all" ? "#fff" : "#333",
+                border: prespecCategory === "all" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              전체 ({prespecCategoryCounts.all})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("library"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "library" ? "600" : "500",
+                backgroundColor: prespecCategory === "library" ? "#0369a1" : "#fff",
+                color: prespecCategory === "library" ? "#fff" : "#333",
+                border: prespecCategory === "library" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              도서관 ({prespecCategoryCounts.library})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("records"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "records" ? "600" : "500",
+                backgroundColor: prespecCategory === "records" ? "#0369a1" : "#fff",
+                color: prespecCategory === "records" ? "#fff" : "#333",
+                border: prespecCategory === "records" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              기록물 ({prespecCategoryCounts.records})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("database"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "database" ? "600" : "500",
+                backgroundColor: prespecCategory === "database" ? "#0369a1" : "#fff",
+                color: prespecCategory === "database" ? "#fff" : "#333",
+                border: prespecCategory === "database" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              데이터베이스 ({prespecCategoryCounts.database})
+            </button>
+            <button
+              onClick={() => { setPrespecCategory("metadata"); resetPagination(); }}
+              style={{
+                padding: "10px 20px",
+                fontSize: "14px",
+                fontWeight: prespecCategory === "metadata" ? "600" : "500",
+                backgroundColor: prespecCategory === "metadata" ? "#0369a1" : "#fff",
+                color: prespecCategory === "metadata" ? "#fff" : "#333",
+                border: prespecCategory === "metadata" ? "none" : "1px solid #d1d5db",
+                borderRadius: "8px",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+            >
+              메타데이터 ({prespecCategoryCounts.metadata})
             </button>
           </div>
         </div>
