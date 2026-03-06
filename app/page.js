@@ -1161,6 +1161,22 @@ export default function Home() {
                     lineHeight: "1.5" // 가독성 개선
                   }}
                 >
+                  {/* 사전규격 표시 (제목 앞) */}
+                  {item.bfSpecRgstNo && !item.bidNtceNo && (
+                    <span style={{
+                      marginRight: "8px",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      backgroundColor: "#f0f9ff",
+                      color: "#0369a1",
+                      border: "1px solid #bae6fd",
+                      whiteSpace: "nowrap"
+                    }}>
+                      사전규격
+                    </span>
+                  )}
                   {item.bidNtceNm || item.prdctClsfcNoNm}
                   {/* NEW 배지 */}
                   {isNew(item) && (
@@ -1175,22 +1191,6 @@ export default function Home() {
                       whiteSpace: "nowrap"
                     }}>
                       NEW
-                    </span>
-                  )}
-                  {/* 사전규격 표시 */}
-                  {item.bfSpecRgstNo && !item.bidNtceNo && (
-                    <span style={{
-                      marginLeft: "8px",
-                      padding: "2px 6px",
-                      borderRadius: "4px",
-                      fontSize: "11px",
-                      fontWeight: "600",
-                      backgroundColor: "#f0f9ff",
-                      color: "#0369a1",
-                      border: "1px solid #bae6fd",
-                      whiteSpace: "nowrap" // 배지는 한 줄 유지
-                    }}>
-                      사전규격
                     </span>
                   )}
                 </a>
