@@ -897,18 +897,16 @@ export default function Home() {
                 gap: "10px"
               }}>
                 <a
-                  href={item.bidNtceUrl || "#"}
-                  target={item.bidNtceUrl ? "_blank" : "_self"}
-                  onClick={(e) => {
-                    // 사전규격이고 bidNtceUrl이 없으면 첫 번째 PDF 다운로드
-                    if (!item.bidNtceUrl && item.specDocFileUrl1) {
-                      e.preventDefault();
-                      window.open(item.specDocFileUrl1, '_blank');
-                    } else if (!item.bidNtceUrl) {
-                      // 링크가 전혀 없으면 클릭 방지
-                      e.preventDefault();
-                    }
-                  }}
+                  href={
+                    // 사전규격이면 자체 상세 페이지로, 입찰공고면 나라장터로
+                    (item.bfSpecRgstNo && !item.bidNtceNo) 
+                      ? `/prespec/${item.bfSpecRgstNo}` 
+                      : (item.bidNtceUrl || "#")
+                  }
+                  target={
+                    // 사전규격이면 같은 탭, 입찰공고면 새 탭
+                    (item.bfSpecRgstNo && !item.bidNtceNo) ? "_self" : "_blank"
+                  }
                   style={{
                     fontWeight:"bold",
                     fontSize:"16px",
@@ -916,7 +914,7 @@ export default function Home() {
                     color:"#111",
                     flex: 1,
                     minWidth: 0,
-                    cursor: (item.bidNtceUrl || item.specDocFileUrl1) ? "pointer" : "default"
+                    cursor: "pointer"
                   }}
                 >
                   {item.bidNtceNm || item.prdctClsfcNoNm}
