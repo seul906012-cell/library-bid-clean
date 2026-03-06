@@ -63,6 +63,23 @@ export async function GET(request) {
     }
   }
 
+  // 배치 처리 함수: Promise 배열을 N개씩 나눠서 순차 실행
+  async function processBatches(promises, batchSize = 20) {
+    const results = [];
+    for (let i = 0; i < promises.length; i += batchSize) {
+      const batch = promises.slice(i, i + batchSize);
+      console.log(`  Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(promises.length / batchSize)} (${batch.length} requests)...`);
+      const batchResults = await Promise.all(batch);
+      results.push(...batchResults);
+      
+      // 배치 간 짧은 지연 (API 부하 감소)
+      if (i + batchSize < promises.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    return results;
+  }
+
   // 디버깅: SERVICE_KEY 확인
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
@@ -173,18 +190,18 @@ export async function GET(request) {
     })
   );
 
-  // 모든 요청 병렬 실행
+  // 모든 요청 배치 처리로 실행 (한 번에 20개씩)
   const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length 
     + nationalPreSpecPromises.length + assemblyPreSpecPromises.length + keywordPreSpecPromises.length;
-  console.log(`🚀 Executing ${totalRequests} API requests in parallel...`);
+  console.log(`🚀 Executing ${totalRequests} API requests in batches of 20...`);
   
   const [nationalResults, assemblyResults, keywordResults, nationalPreSpecResults, assemblyPreSpecResults, keywordPreSpecResults] = await Promise.all([
-    Promise.all(nationalPromises),
-    Promise.all(assemblyPromises),
-    Promise.all(keywordPromises),
-    Promise.all(nationalPreSpecPromises),
-    Promise.all(assemblyPreSpecPromises),
-    Promise.all(keywordPreSpecPromises)
+    processBatches(nationalPromises, 20),
+    processBatches(assemblyPromises, 20),
+    processBatches(keywordPromises, 20),
+    processBatches(nationalPreSpecPromises, 20),
+    processBatches(assemblyPreSpecPromises, 20),
+    processBatches(keywordPreSpecPromises, 20)
   ]);
 
   const fetchTime = Date.now() - startTime;
