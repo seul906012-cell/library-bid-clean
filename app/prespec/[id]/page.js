@@ -203,29 +203,8 @@ export default function PreSpecDetailPage() {
       }}>
         {/* 상단 헤더 */}
         <div style={{
-          marginBottom: "20px",
-          display: "flex",
-          alignItems: "center",
-          gap: "12px"
+          marginBottom: "20px"
         }}>
-          <button
-            onClick={() => router.push("/")}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#fff",
-              border: "1px solid #e5e7eb",
-              borderRadius: "8px",
-              fontSize: "14px",
-              color: "#666",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px"
-            }}
-          >
-            ← 목록으로
-          </button>
-          
           <div style={{
             padding: "6px 12px",
             backgroundColor: "#f0f9ff",
@@ -233,7 +212,8 @@ export default function PreSpecDetailPage() {
             border: "1px solid #bae6fd",
             borderRadius: "6px",
             fontSize: "13px",
-            fontWeight: "600"
+            fontWeight: "600",
+            display: "inline-block"
           }}>
             사전규격 상세정보
           </div>
@@ -337,45 +317,64 @@ export default function PreSpecDetailPage() {
                 flexDirection: "column",
                 gap: "10px"
               }}>
-                {attachments.map((url, idx) => (
-                  <a
-                    key={idx}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      padding: "12px 16px",
-                      backgroundColor: "#f9fafb",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                      textDecoration: "none",
-                      color: "#111",
-                      transition: "all 0.2s"
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f0f9ff";
-                      e.currentTarget.style.borderColor = "#bae6fd";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f9fafb";
-                      e.currentTarget.style.borderColor = "#e5e7eb";
-                    }}
-                  >
-                    <span style={{ fontSize: "24px" }}>📄</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "14px", fontWeight: "500" }}>
-                        첨부파일 {idx + 1}
+                {attachments.map((url, idx) => {
+                  // URL에서 파일명 추출
+                  const getFileName = (url) => {
+                    try {
+                      const urlParams = new URLSearchParams(url.split('?')[1]);
+                      const fileType = urlParams.get('fileType');
+                      const fileSeq = urlParams.get('fileSeq');
+                      const regNo = urlParams.get('bfSpecRegNo') || data.bfSpecRgstNo;
+                      
+                      // 기본 파일명 생성
+                      return `사전규격서_${regNo}_${fileSeq || (idx + 1)}.pdf`;
+                    } catch (e) {
+                      return `첨부파일${idx + 1}.pdf`;
+                    }
+                  };
+                  
+                  const fileName = getFileName(url);
+                  
+                  return (
+                    <a
+                      key={idx}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        padding: "12px 16px",
+                        backgroundColor: "#f9fafb",
+                        border: "1px solid #e5e7eb",
+                        borderRadius: "8px",
+                        textDecoration: "none",
+                        color: "#111",
+                        transition: "all 0.2s"
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f0f9ff";
+                        e.currentTarget.style.borderColor = "#bae6fd";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f9fafb";
+                        e.currentTarget.style.borderColor = "#e5e7eb";
+                      }}
+                    >
+                      <span style={{ fontSize: "24px" }}>📄</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "14px", fontWeight: "500" }}>
+                          {fileName}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
+                          클릭하여 다운로드
+                        </div>
                       </div>
-                      <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
-                        클릭하여 다운로드
-                      </div>
-                    </div>
-                    <span style={{ fontSize: "18px", color: "#3b82f6" }}>↓</span>
-                  </a>
-                ))}
+                      <span style={{ fontSize: "18px", color: "#3b82f6" }}>↓</span>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -420,20 +419,20 @@ export default function PreSpecDetailPage() {
           textAlign: "center"
         }}>
           <button
-            onClick={() => router.push("/")}
+            onClick={() => window.close()}
             style={{
               padding: "12px 32px",
-              backgroundColor: "#3b82f6",
+              backgroundColor: "#6b7280",
               color: "#fff",
               border: "none",
               borderRadius: "8px",
               fontSize: "14px",
               fontWeight: "500",
               cursor: "pointer",
-              boxShadow: "0 2px 4px rgba(59, 130, 246, 0.3)"
+              boxShadow: "0 2px 4px rgba(107, 114, 128, 0.3)"
             }}
           >
-            목록으로 돌아가기
+            닫기
           </button>
         </div>
       </div>
