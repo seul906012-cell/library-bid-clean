@@ -23,6 +23,7 @@
   font-weight: 600;
   margin-bottom: 8px;
   color: #666;
+  white-space: nowrap;  /* 카드 라벨 한 줄 유지 */
 }
 
 .card-count {
@@ -31,34 +32,41 @@
   color: #333;
 }
 
-/* PC 화면 - 4개 무조건 가로 한 줄 */
+/* PC 화면 - 5개 무조건 가로 한 줄 */
 @media (min-width: 768px) {
   .category-card {
     flex: 1 1 0;
     min-width: 0;
   }
+  
+  .card-label {
+    font-size: 12px;  /* PC에서 글자 크기 줄여서 한 줄 유지 */
+  }
 }
 
-/* 모바일 화면 - 4개 한 줄 */
+/* 모바일 화면 - 5개 한 줄 (매우 작은 카드) */
 @media (max-width: 767px) {
   .card-container {
-    gap: 8px !important;
+    gap: 6px !important;
   }
   
   .category-card {
     flex: 1 1 0;
     min-width: 0;
-    padding: 10px 4px;
+    padding: 8px 2px;
   }
   
   .card-label {
-    font-size: 10px;
+    font-size: 9px;
     margin-bottom: 4px;
     font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   
   .card-count {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   /* 모바일 헤더 스타일 */
@@ -127,6 +135,22 @@
   }
   
   .keyword-category-buttons button {
+    padding: 8px 4px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  
+  /* 모바일 사전규격 카테고리 버튼 */
+  .prespec-category-buttons {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px !important;
+    justify-items: stretch;
+    width: 100%;
+  }
+  
+  .prespec-category-buttons button {
     padding: 8px 4px !important;
     font-size: 11px !important;
     white-space: nowrap;
