@@ -271,6 +271,12 @@ export async function GET(request) {
     const uniqueId = item.bfSpecRgstNo || item.stdNo || item.untyStdNo || item.stdNtceNo;
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
+      
+      // 사전규격 공고 페이지 URL 생성
+      if (item.bfSpecRgstNo) {
+        item.bidNtceUrl = `https://www.g2b.go.kr/pn/pnz/pnza/untyStdrdInfoListSrch.do?bfSpecRgstNo=${item.bfSpecRgstNo}`;
+      }
+      
       preSpec.push(item);
     }
   });
