@@ -204,6 +204,7 @@ export default function Home() {
         i.pubPrcrmntClsfcNm || "",      // 공공조달 소분류
         i.dminsttNm || "",              // 수요기관명
         i.ntceInsttNm || "",            // 공고기관명
+        i.bfSpecRgstNo || "",           // 사전규격등록번호 (있으면 사전규격 공고)
         // 첨부파일명 전체 검색 (사전규격이 파일명에 있을 수 있음)
         i.ntceSpecFileNm1 || "",
         i.ntceSpecFileNm2 || "",
