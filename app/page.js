@@ -89,8 +89,8 @@ export default function Home() {
     const cutoffDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
     
     const filtered = fullData.filter(item => {
-      if (!item.bidNtceDt) return false;
-      const noticeDate = new Date(item.bidNtceDt);
+      const noticeDate = new Date(item.bidNtceDt || item.rcptDt);
+      if (!noticeDate || isNaN(noticeDate.getTime())) return false;
       return noticeDate >= cutoffDate;
     });
     
@@ -234,23 +234,23 @@ export default function Home() {
   filtered.sort((a,b)=>{
 
     if(sort === "latest") {
-      // 최신순: 공고일 기준
-      const da = new Date(a.bidNtceDt||0);
-      const db = new Date(b.bidNtceDt||0);
+      // 최신순: 공고일/접수일 기준
+      const da = new Date(a.bidNtceDt || a.rcptDt || 0);
+      const db = new Date(b.bidNtceDt || b.rcptDt || 0);
       return db - da;
     }
     
     if(sort === "old") {
-      // 오래된순: 공고일 기준
-      const da = new Date(a.bidNtceDt||0);
-      const db = new Date(b.bidNtceDt||0);
+      // 오래된순: 공고일/접수일 기준
+      const da = new Date(a.bidNtceDt || a.rcptDt || 0);
+      const db = new Date(b.bidNtceDt || b.rcptDt || 0);
       return da - db;
     }
     
     if(sort === "deadline") {
-      // 마감일순: 입찰 마감일 기준 (많이 남은 것부터)
-      const da = new Date(a.bidClseDt||"9999-12-31");
-      const db = new Date(b.bidClseDt||"9999-12-31");
+      // 마감일순: 입찰 마감일/의견등록마감일 기준 (많이 남은 것부터)
+      const da = new Date(a.bidClseDt || a.opninRgstClseDt || "9999-12-31");
+      const db = new Date(b.bidClseDt || b.opninRgstClseDt || "9999-12-31");
       return db - da;
     }
 
@@ -369,7 +369,8 @@ export default function Home() {
   };
 
   // NEW 배지 체크 함수 (오늘 올라온 공고)
-  const isNew = (dateStr) => {
+  const isNew = (item) => {
+    const dateStr = item.bidNtceDt || item.rcptDt;
     if (!dateStr) return false;
     try {
       const noticeDate = new Date(dateStr);
@@ -873,7 +874,7 @@ export default function Home() {
           else if(isAssembly(item)) color="#8b5cf6";
           else if(isKeyword(item)) color="#10b981";
 
-          const dday = getDday(item.bidClseDt);
+          const dday = getDday(item.bidClseDt || item.opninRgstClseDt);
 
           return (
 
@@ -896,7 +897,7 @@ export default function Home() {
                 gap: "10px"
               }}>
                 <a
-                  href={item.bidNtceUrl}
+                  href={item.bidNtceUrl || item.specDocFileUrl1}
                   target="_blank"
                   style={{
                     fontWeight:"bold",
@@ -916,7 +917,7 @@ export default function Home() {
                   gap: "6px",
                   flexShrink: 0
                 }}>
-                  {isNew(item.bidNtceDt) && (
+                  {isNew(item) && (
                     <span style={{
                       padding: "3px 8px",
                       borderRadius: "4px",
@@ -951,7 +952,7 @@ export default function Home() {
                 color:"#666",
                 fontSize:"14px"
               }}>
-                📄 {item.dminsttNm||item.ntceInsttNm}
+                📄 {item.dminsttNm || item.ntceInsttNm || item.rlDminsttNm || item.orderInsttNm}
               </div>
 
               <div style={{
@@ -963,13 +964,13 @@ export default function Home() {
                 flexWrap: "wrap"
               }}>
                 <div>
-                  <span style={{fontWeight: "600", color: "#333"}}>📢 공고일:</span> {formatDate(item.bidNtceDt)}
+                  <span style={{fontWeight: "600", color: "#333"}}>📢 {item.bidNtceDt ? '공고일' : '접수일'}:</span> {formatDate(item.bidNtceDt || item.rcptDt)}
                 </div>
                 <div>
                   <span style={{fontWeight: "600", color: "#333"}}>💰 예산:</span> {formatAmount(item.asignBdgtAmt)}
                 </div>
                 <div>
-                  <span style={{fontWeight: "600", color: "#333"}}>📅 입찰마감:</span> {formatDate(item.bidClseDt)}
+                  <span style={{fontWeight: "600", color: "#333"}}>📅 {item.bidClseDt ? '입찰마감' : '의견등록마감'}:</span> {formatDate(item.bidClseDt || item.opninRgstClseDt)}
                 </div>
               </div>
 
