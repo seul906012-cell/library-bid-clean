@@ -291,7 +291,7 @@ export default function Home() {
     }
     
     if(sort === "deadline") {
-      // 마감일순: 입찰 마감일/의견등록마감일 기준 (가까운 것부터)
+      // 마감일순: 입찰 마감일/의견등록마감일 기준 (가까운 것부터, 마감된 것은 맨 아래)
       const dateA = a.bidClseDt || a.opninRgstClseDt;
       const dateB = b.bidClseDt || b.opninRgstClseDt;
       
@@ -304,7 +304,7 @@ export default function Home() {
       // B만 마감일이 없으면 A보다 뒤로
       if (!dateB || dateB.trim() === "") return -1;
       
-      // 둘 다 마감일이 있으면 날짜 비교 (가까운 것부터 = 오름차순)
+      // 둘 다 마감일이 있으면 날짜 비교
       const da = new Date(dateA);
       const db = new Date(dateB);
       
@@ -313,6 +313,29 @@ export default function Home() {
       if (isNaN(da.getTime())) return 1;
       if (isNaN(db.getTime())) return -1;
       
+      // 오늘 날짜 (00:00:00)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const daTime = new Date(da);
+      const dbTime = new Date(db);
+      daTime.setHours(0, 0, 0, 0);
+      dbTime.setHours(0, 0, 0, 0);
+      
+      // 마감 여부 판단
+      const aExpired = daTime < today;
+      const bExpired = dbTime < today;
+      
+      // 둘 다 마감됨 → 최신 마감일 먼저
+      if (aExpired && bExpired) return db - da;
+      
+      // A만 마감됨 → B보다 뒤로
+      if (aExpired) return 1;
+      
+      // B만 마감됨 → A보다 뒤로
+      if (bExpired) return -1;
+      
+      // 둘 다 마감 안됨 → 가까운 것부터 (오름차순)
       return da - db;
     }
 
