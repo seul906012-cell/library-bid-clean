@@ -263,14 +263,31 @@ export async function GET(request) {
       preSpec.push(item);
     }
   });
-  console.log(`Pre-Specifications: National ${nationalPreSpecItems.length}, Assembly ${assemblyPreSpecItems.length}, Keywords ${keywordPreSpecItems.length}, Total unique ${preSpec.length}`);
+  
+  const preSpecBeforeFilter = preSpec.length;
+  
+  // 🔍 중복 제거: 입찰공고에 사전규격번호가 있으면 해당 사전규격 제외
+  // (입찰공고 = 사전규격의 다음 단계이므로, 입찰공고만 표시)
+  const filteredPreSpec = preSpec.filter(preSpecItem => {
+    const preSpecId = preSpecItem.stdNo || preSpecItem.untyStdNo || preSpecItem.stdNtceNo;
+    
+    // 입찰공고 중에 이 사전규격번호를 가진 것이 있는지 확인
+    const hasBidNotice = [...national, ...assembly, ...keyword].some(
+      bidItem => bidItem.bfSpecRgstNo === preSpecId
+    );
+    
+    // 입찰공고가 없는 사전규격만 유지
+    return !hasBidNotice;
+  });
+  
+  console.log(`Pre-Specifications: National ${nationalPreSpecItems.length}, Assembly ${assemblyPreSpecItems.length}, Keywords ${keywordPreSpecItems.length}, Total unique ${preSpecBeforeFilter}, After dedup with bids ${filteredPreSpec.length} (removed ${preSpecBeforeFilter - filteredPreSpec.length})`);
 
   /* 전체 합치기 */
 
   const map = new Map();
   const all = [];
 
-  [...national, ...assembly, ...keyword, ...preSpec].forEach((item) => {
+  [...national, ...assembly, ...keyword, ...filteredPreSpec].forEach((item) => {
     const uniqueId = item.bidNtceNo || item.stdNo || item.untyStdNo || item.stdNtceNo;
     if (uniqueId && !map.has(uniqueId)) {
       map.set(uniqueId, true);
@@ -285,14 +302,14 @@ export async function GET(request) {
     national,
     assembly,
     keyword,
-    preSpec,  // 사전규격 추가
+    preSpec: filteredPreSpec,  // 중복 제거된 사전규격
     all,
     debug: {
       hasServiceKey: !!SERVICE_KEY,
       nationalCount: national.length,
       assemblyCount: assembly.length,
       keywordCount: keyword.length,
-      preSpecCount: preSpec.length,  // 사전규격 카운트 추가
+      preSpecCount: filteredPreSpec.length,  // 중복 제거된 사전규격 카운트
       totalItems: all.length,
       fetchTimeMs: fetchTime,
       dateRanges: dateRanges.length,
