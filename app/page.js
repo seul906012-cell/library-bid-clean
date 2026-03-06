@@ -202,6 +202,11 @@ export default function Home() {
     filtered = data.filter(i=>isKeyword(i) && !isNational(i) && !isAssembly(i));
   }
 
+  if(mode==="prespec"){
+    // 사전규격 공고만 필터링 (bfSpecRgstNo가 있고 bidNtceNo가 없는 것)
+    filtered = data.filter(i=>i.bfSpecRgstNo && !i.bidNtceNo);
+  }
+
 
 
   if(search){
@@ -281,6 +286,11 @@ export default function Home() {
   // 키워드 카운트: 국립중앙/국회 제외한 순수 키워드만
   const keywordCount = data.filter(i=>
     isKeywordAll(i) && !isNational(i) && !isAssembly(i)
+  ).length;
+
+  // 사전규격 카운트: bfSpecRgstNo가 있고 bidNtceNo가 없는 것
+  const preSpecCount = data.filter(i=>
+    i.bfSpecRgstNo && !i.bidNtceNo
   ).length;
 
   // 키워드 카테고리별 건수 (국립중앙/국회 제외)
@@ -714,6 +724,21 @@ export default function Home() {
         >
           <div className="card-label">키워드</div>
           <h2 className="card-count">{keywordCount}</h2>
+        </div>
+
+
+
+        <div
+          onClick={()=>{setMode("prespec"); resetPagination();}}
+          className={`category-card ${mode === "prespec" ? "active" : ""}`}
+          style={{
+            background: mode === "prespec" ? "rgba(3, 105, 161, 0.08)" : "#fff",
+            borderTop:"5px solid #0369a1",
+            boxShadow: mode === "prespec" ? "0 4px 12px rgba(3, 105, 161, 0.2)" : "0 2px 4px rgba(0,0,0,0.05)"
+          }}
+        >
+          <div className="card-label">사전규격</div>
+          <h2 className="card-count">{preSpecCount}</h2>
         </div>
 
 
