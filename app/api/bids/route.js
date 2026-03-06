@@ -149,6 +149,7 @@ export async function GET(request) {
   const nationalPreSpecPromises = dateRanges.map(range => {
     const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&rlDminsttNm=${encodeURIComponent("문화체육관광부 국립중앙도서관")}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const preSpecUrl_inst = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
+    console.log(`🔗 Pre-spec URL (sample): ${preSpecUrl_inst.substring(0, 150)}...`);
     return fetchData(preSpecUrl_inst);
   });
 
@@ -258,6 +259,8 @@ export async function GET(request) {
   const nationalPreSpecItems = nationalPreSpecResults.flat().filter(item => item && !item.error);
   const assemblyPreSpecItems = assemblyPreSpecResults.flat().filter(item => item && !item.error);
   const keywordPreSpecItems = keywordPreSpecResults.flat().filter(item => item && !item.error);
+  
+  console.log(`🔍 Pre-spec raw results: National ${nationalPreSpecResults.flat().length} (filtered: ${nationalPreSpecItems.length}), Assembly ${assemblyPreSpecResults.flat().length} (filtered: ${assemblyPreSpecItems.length}), Keywords ${keywordPreSpecResults.flat().length} (filtered: ${keywordPreSpecItems.length})`);
   
   const preSpecMap = new Map();
   const preSpec = [];
