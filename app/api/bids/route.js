@@ -163,16 +163,11 @@ export async function GET(request) {
     return fetchData(preSpecUrl_inst);
   });
 
-  // 6. 키워드로 사전규격 조회 (모든 키워드 × 날짜 구간 병렬)
-  // 8번 API를 사용하여 실수요기관명으로 검색
-  console.log(`📋 [6/6] Fetching Keyword Pre-Specifications (${keywords.length} keywords)...`);
-  const keywordPreSpecPromises = keywords.flatMap(kw =>
-    dateRanges.map(range => {
-      const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&rlDminsttNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
-      return fetchData(preSpecQueryUrl);
-    })
-  );
+  // 6. 키워드로 사전규격 조회 - 비활성화
+  // 이유: getInsttAcctoThngListInfoServc는 기관명 검색만 지원
+  // 키워드 검색용 API가 별도로 필요함
+  console.log(`📋 [6/6] Keyword Pre-Specifications - SKIPPED (no keyword search API)`);
+  const keywordPreSpecPromises = [];
 
   // 모든 요청 병렬 실행
   const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length 
