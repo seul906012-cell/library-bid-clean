@@ -153,13 +153,13 @@ export default function Home() {
 
   // 카운트 계산용 - 항상 모든 키워드 체크 (필터와 무관)
   const isKeywordAll = (i)=>{
-    const title=i.bidNtceNm||"";
+    const title=i.bidNtceNm || i.prdctClsfcNoNm || "";
     return keywords.some(k=>title.includes(k));
   };
 
   // 필터링용 - 현재 선택된 카테고리에 따라 체크
   const isKeyword = (i)=>{
-    const title=i.bidNtceNm||"";
+    const title=i.bidNtceNm || i.prdctClsfcNoNm || "";
     
     // 키워드 모드일 때 세부 카테고리 필터링
     if(mode === "keyword" && keywordCategory !== "all"){
@@ -200,6 +200,7 @@ export default function Home() {
       // 여러 필드를 통합하여 검색
       const searchableText = [
         i.bidNtceNm || "",              // 공고명
+        i.prdctClsfcNoNm || "",         // 사전규격명 (품명)
         i.ntceKindNm || "",             // 공고종류
         i.cntrctCnclsMthdNm || "",      // 계약방법
         i.srvceDivNm || "",             // 용역구분
@@ -208,6 +209,8 @@ export default function Home() {
         i.pubPrcrmntClsfcNm || "",      // 공공조달 소분류
         i.dminsttNm || "",              // 수요기관명
         i.ntceInsttNm || "",            // 공고기관명
+        i.rlDminsttNm || "",            // 실수요기관명 (사전규격)
+        i.orderInsttNm || "",           // 발주기관명 (사전규격)
         i.bfSpecRgstNo || "",           // 사전규격등록번호 (있으면 사전규격 공고)
         // 첨부파일명 전체 검색 (사전규격이 파일명에 있을 수 있음)
         i.ntceSpecFileNm1 || "",
@@ -274,22 +277,22 @@ export default function Home() {
   const keywordCategoryCounts = {
     all: keywordCount,
     library: data.filter(i => {
-      const title = i.bidNtceNm || "";
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.library.some(k => title.includes(k)) && 
              !isNational(i) && !isAssembly(i);
     }).length,
     records: data.filter(i => {
-      const title = i.bidNtceNm || "";
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.records.some(k => title.includes(k)) && 
              !isNational(i) && !isAssembly(i);
     }).length,
     database: data.filter(i => {
-      const title = i.bidNtceNm || "";
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.database.some(k => title.includes(k)) && 
              !isNational(i) && !isAssembly(i);
     }).length,
     metadata: data.filter(i => {
-      const title = i.bidNtceNm || "";
+      const title = i.bidNtceNm || i.prdctClsfcNoNm || "";
       return keywordCategories.metadata.some(k => title.includes(k)) && 
              !isNational(i) && !isAssembly(i);
     }).length
@@ -904,7 +907,7 @@ export default function Home() {
                     minWidth: 0
                   }}
                 >
-                  {item.bidNtceNm}
+                  {item.bidNtceNm || item.prdctClsfcNoNm}
                 </a>
                 
                 <div style={{
