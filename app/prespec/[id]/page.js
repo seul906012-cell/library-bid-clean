@@ -16,6 +16,25 @@ export default function PreSpecDetailPage() {
     const fetchDetail = async () => {
       try {
         setLoading(true);
+        
+        // 먼저 sessionStorage에서 캐시된 데이터 확인
+        if (typeof window !== 'undefined') {
+          const cachedData = sessionStorage.getItem('bidData');
+          if (cachedData) {
+            const allData = JSON.parse(cachedData);
+            const item = allData.find(d => d.bfSpecRgstNo === params.id);
+            
+            if (item) {
+              console.log('Found in cache:', params.id);
+              setData(item);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+        
+        // 캐시에 없으면 API 호출
+        console.log('Not in cache, fetching from API:', params.id);
         const res = await fetch(`/api/prespec/${params.id}`);
         const json = await res.json();
 

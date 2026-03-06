@@ -64,6 +64,15 @@ export default function Home() {
       setFullData(allData); // 전체 데이터 저장
       setData(allData); // 현재 표시 데이터
       
+      // sessionStorage에 데이터 저장 (상세 페이지에서 사용)
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('bidData', JSON.stringify(allData));
+        } catch (e) {
+          console.warn('Failed to save to sessionStorage:', e);
+        }
+      }
+      
       setLoading(false);
       
       // 2초 후 메시지 숨김
