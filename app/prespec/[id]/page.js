@@ -9,6 +9,7 @@ export default function PreSpecDetailPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fileNames, setFileNames] = useState({}); // 파일명 캐시
 
   useEffect(() => {
     if (!params.id) return;
@@ -191,6 +192,24 @@ export default function PreSpecDetailPage() {
     .map(num => data[`specDocFileUrl${num}`])
     .filter(url => url);
 
+  // 파일명 추출 함수 (URL에서 추정)
+  const getFileNameFromUrl = (url, idx) => {
+    try {
+      // URL 파라미터 파싱
+      const urlObj = new URL(url);
+      const params = urlObj.searchParams;
+      const fileSeq = params.get('fileSeq');
+      
+      // fileSeq가 있으면 사용, 없으면 idx+1
+      const seqNum = fileSeq || (idx + 1);
+      
+      // 일반적인 파일명 패턴 (나라장터는 보통 이런 형식)
+      return `첨부파일 ${seqNum}`;
+    } catch (e) {
+      return `첨부파일 ${idx + 1}`;
+    }
+  };
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -318,16 +337,7 @@ export default function PreSpecDetailPage() {
                 gap: "10px"
               }}>
                 {attachments.map((url, idx) => {
-                  // 첨부파일 번호에 따라 의미있는 이름 지정
-                  const fileNames = [
-                    "제안요청서",
-                    "과업지시서", 
-                    "참고자료",
-                    "첨부문서",
-                    "기타문서"
-                  ];
-                  
-                  const fileName = fileNames[idx] || `첨부문서 ${idx + 1}`;
+                  const fileName = getFileNameFromUrl(url, idx);
                   
                   return (
                     <a
@@ -335,6 +345,7 @@ export default function PreSpecDetailPage() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      download
                       style={{
                         display: "flex",
                         alignItems: "center",
