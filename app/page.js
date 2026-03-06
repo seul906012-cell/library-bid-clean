@@ -198,13 +198,13 @@ export default function Home() {
   }
 
   if(mode==="keyword"){
-    // 키워드 공고: 국립중앙/국회 제외
-    filtered = data.filter(i=>isKeyword(i) && !isNational(i) && !isAssembly(i));
+    // 키워드 입찰공고: 국립중앙/국회 제외, 사전규격 제외
+    filtered = data.filter(i=>isKeyword(i) && !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo));
   }
 
   if(mode==="prespec"){
-    // 사전규격 공고만 필터링 (bfSpecRgstNo가 있고 bidNtceNo가 없는 것)
-    filtered = data.filter(i=>i.bfSpecRgstNo && !i.bidNtceNo);
+    // 키워드 매칭 사전규격만 필터링 (국립중앙/국회 제외)
+    filtered = data.filter(i=>i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && isKeywordAll(i));
   }
 
 
@@ -287,14 +287,14 @@ export default function Home() {
     isAssembly(i) && !isNational(i)
   ).length;
 
-  // 3. 키워드: 국립중앙/국회 제외한 키워드 공고 (입찰+사전규격 모두)
+  // 3. 키워드: 국립중앙/국회 제외한 키워드 매칭 입찰공고만 (사전규격 제외)
   const keywordCount = data.filter(i=>
-    isKeywordAll(i) && !isNational(i) && !isAssembly(i)
+    isKeywordAll(i) && !isNational(i) && !isAssembly(i) && !(i.bfSpecRgstNo && !i.bidNtceNo)
   ).length;
 
-  // 4. 사전규격: 국립중앙/국회/키워드 제외한 순수 사전규격만
+  // 4. 사전규격: 국립중앙/국회 제외한 키워드 매칭 사전규격만
   const preSpecCount = data.filter(i=>
-    i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && !isKeywordAll(i)
+    i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && isKeywordAll(i)
   ).length;
 
   // 키워드 카테고리별 건수 (국립중앙/국회 제외)
