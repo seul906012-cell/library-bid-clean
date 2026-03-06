@@ -22,45 +22,70 @@ export async function GET(request) {
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
-  async function fetchData(url) {
-    try {
-      const res = await fetch(url);
-      const xml = await res.text();
+  async function fetchData(url, retries = 2) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15초 타임아웃
+        
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        const xml = await res.text();
 
-      // 디버깅: API 응답 확인
-      console.log("API Response Status:", res.status);
-      console.log("API Response (first 200 chars):", xml.substring(0, 200));
-      console.log("API URL (first 100 chars):", url.substring(0, 100));
+        // 디버깅: API 응답 확인
+        if (attempt > 1) {
+          console.log(`✅ Retry ${attempt} succeeded for URL:`, url.substring(0, 100));
+        }
 
-      // Unauthorized 체크 (사전규격 API 승인 대기)
-      if (xml.includes("Unauthorized") || xml.includes("unauthorized")) {
-        console.error("⚠️  API Unauthorized - waiting for activation. URL:", url.substring(0, 150));
+        // Unauthorized 체크 (사전규격 API 승인 대기)
+        if (xml.includes("Unauthorized") || xml.includes("unauthorized")) {
+          console.error("⚠️  API Unauthorized - waiting for activation. URL:", url.substring(0, 150));
+          return [];
+        }
+
+        // API 트래픽 한도 초과 체크
+        if (xml.includes("API token quota exceeded") || xml.includes("quota exceeded")) {
+          console.error("⚠️  API token quota exceeded!");
+          return { error: "QUOTA_EXCEEDED" };
+        }
+
+        // XML이 아닐 경우 (Unexpected errors 등)
+        if (!xml || !xml.includes("<response")) {
+          console.error("Invalid XML response. Status:", res.status, "Response:", xml.substring(0, 300));
+          if (attempt < retries) {
+            console.log(`⏳ Retrying (${attempt}/${retries})...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 재시도 전 대기
+            continue;
+          }
+          return [];
+        }
+
+        const json = await parser.parseStringPromise(xml);
+
+        let items = json?.response?.body?.items?.item || [];
+
+        if (!Array.isArray(items)) items = [items];
+
+        return items;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          console.error(`⏱️  Timeout on attempt ${attempt}/${retries}. URL:`, url.substring(0, 100));
+        } else {
+          console.error(`❌ Error on attempt ${attempt}/${retries}:`, err.message);
+        }
+        
+        if (attempt < retries) {
+          console.log(`⏳ Retrying (${attempt}/${retries})...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+        
         return [];
       }
-
-      // API 트래픽 한도 초과 체크
-      if (xml.includes("API token quota exceeded") || xml.includes("quota exceeded")) {
-        console.error("⚠️  API token quota exceeded!");
-        return { error: "QUOTA_EXCEEDED" };
-      }
-
-      // XML이 아닐 경우 (Unexpected errors 등)
-      if (!xml || !xml.includes("<response")) {
-        console.error("Invalid XML response. Status:", res.status, "Response:", xml.substring(0, 300));
-        return [];
-      }
-
-      const json = await parser.parseStringPromise(xml);
-
-      let items = json?.response?.body?.items?.item || [];
-
-      if (!Array.isArray(items)) items = [items];
-
-      return items;
-    } catch (err) {
-      console.error("fetchData error:", err);
-      return [];
     }
+    
+    return [];
   }
 
   // 배치 처리 함수: Promise 배열을 N개씩 나눠서 순차 실행
