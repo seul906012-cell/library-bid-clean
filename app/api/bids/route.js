@@ -272,15 +272,10 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 URL 생성
-      // 1순위: 연결된 입찰공고가 있으면 그 입찰공고 페이지로
-      // 2순위: 사전규격 문서 파일
-      if (item.bidNtceNoList) {
-        const bidNtceNo = item.bidNtceNoList.split(',')[0].trim(); // 첫 번째 입찰공고 번호
-        item.bidNtceUrl = `https://www.g2b.go.kr/link/PNPE027_01/single/?bidPbancNo=${bidNtceNo}&bidPbancOrd=000`;
-      } else if (item.specDocFileUrl1) {
-        // 연결된 입찰공고가 없으면 문서 파일로
-        item.bidNtceUrl = item.specDocFileUrl1;
+      // 사전규격 공고 팝업 URL 생성
+      // 나라장터 사전규격 상세보기 팝업 페이지
+      if (item.bfSpecRgstNo) {
+        item.bidNtceUrl = `https://www.g2b.go.kr/pn/pnz/pnza/untyStdrdInfoDtl.do?bfSpecRgstNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
