@@ -831,7 +831,8 @@ export default function Home() {
       <div style={{
         display:"flex",
         gap:"10px",
-        marginBottom:"30px"
+        marginBottom:"30px",
+        flexWrap: "wrap"  // 모바일에서 줄바꿈 허용
       }}>
 
         <input
@@ -839,10 +840,12 @@ export default function Home() {
           value={search}
           onChange={(e)=>{setSearch(e.target.value); resetPagination();}}
           style={{
-            flex:1,
+            flex:"1 1 200px",  // 최소 너비 200px
+            minWidth: "200px",  // 최소 너비 보장
             padding:"10px",
             borderRadius:"8px",
-            border:"1px solid #ccc"
+            border:"1px solid #ccc",
+            fontSize: "16px"  // iOS에서 자동 줌 방지
           }}
         />
 
@@ -851,7 +854,9 @@ export default function Home() {
           onChange={(e)=>{setSort(e.target.value); resetPagination();}}
           style={{
             padding:"10px",
-            borderRadius:"8px"
+            borderRadius:"8px",
+            fontSize: "16px",  // iOS에서 자동 줌 방지
+            minWidth: "120px"
           }}
         >
           <option value="latest">최신순</option>
