@@ -141,7 +141,7 @@ export async function GET(request) {
   // 4. 국립중앙도서관 사전규격 조회 (모든 날짜 구간 병렬)
   console.log(`📘 [4/6] Fetching National Library Pre-Specifications...`);
   const nationalPreSpecPromises = dateRanges.map(range => {
-    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${nationalLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&rlDminsttNm=${encodeURIComponent("문화체육관광부 국립중앙도서관")}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const preSpecUrl_inst = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
     return fetchData(preSpecUrl_inst);
   });
@@ -149,17 +149,18 @@ export async function GET(request) {
   // 5. 국회도서관 사전규격 조회 (모든 날짜 구간 병렬)
   console.log(`🏛️  [5/6] Fetching Assembly Library Pre-Specifications...`);
   const assemblyPreSpecPromises = dateRanges.map(range => {
-    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&dminsttCd=${assemblyLibraryCode}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&rlDminsttNm=${encodeURIComponent("국회 국회도서관")}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const preSpecUrl_inst = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
     return fetchData(preSpecUrl_inst);
   });
 
   // 6. 키워드로 사전규격 조회 (모든 키워드 × 날짜 구간 병렬)
+  // 8번 API를 사용하여 실수요기관명으로 검색
   console.log(`📋 [6/6] Fetching Keyword Pre-Specifications (${keywords.length} keywords)...`);
   const keywordPreSpecPromises = keywords.flatMap(kw =>
     dateRanges.map(range => {
-      const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&stdNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
-      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperationByKeyword}?${preSpecQuery}`;
+      const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&rlDminsttNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperationByInstitution}?${preSpecQuery}`;
       return fetchData(preSpecQueryUrl);
     })
   );
