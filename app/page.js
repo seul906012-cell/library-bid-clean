@@ -415,7 +415,8 @@ export default function Home() {
 
   // 날짜 포맷 함수
   const formatDate = (dateStr) => {
-    if (!dateStr) return "-";
+    // 빈 문자열이나 null/undefined 체크
+    if (!dateStr || dateStr.trim() === "") return "-";
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) return "-";
