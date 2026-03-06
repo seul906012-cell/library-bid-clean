@@ -35,10 +35,12 @@ export default function Home() {
     // 진행률 시뮬레이션 (실제 API는 스트리밍을 지원하지 않으므로)
     const progressInterval = setInterval(() => {
       setLoadingProgress(prev => {
-        if (prev >= 90) return 90; // 90%에서 대기
-        return prev + 10;
+        // 95%까지는 빠르게, 그 이후는 천천히
+        if (prev >= 95) return Math.min(prev + 0.5, 98); // 95~98%에서 천천히
+        if (prev >= 80) return prev + 2; // 80~95%는 조금 느리게
+        return prev + 8; // 0~80%는 빠르게
       });
-    }, 200);
+    }, 300);
     
     fetch(`/api/bids?days=${days}`)
     .then(res => res.json())
