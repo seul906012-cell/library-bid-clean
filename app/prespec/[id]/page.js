@@ -13,45 +13,37 @@ export default function PreSpecDetailPage() {
   useEffect(() => {
     if (!params.id) return;
 
-    const fetchDetail = async () => {
+    const fetchDetail = () => {
       try {
         setLoading(true);
         
-        // 먼저 localStorage에서 캐시된 데이터 확인 (새 탭에서도 공유됨)
+        // localStorage에서 캐시된 데이터 확인
         if (typeof window !== 'undefined') {
           const cachedData = localStorage.getItem('bidData');
           if (cachedData) {
             const allData = JSON.parse(cachedData);
-            console.log('Searching for ID:', params.id);
-            console.log('Total cached items:', allData.length);
-            
             const item = allData.find(d => d.bfSpecRgstNo === params.id);
             
             if (item) {
-              console.log('✅ Found in cache:', item.prdctClsfcNoNm || item.bidNtceNm);
+              console.log('✅ Found:', item.prdctClsfcNoNm || item.bidNtceNm);
               setData(item);
               setLoading(false);
               return;
             } else {
-              console.log('❌ Not found in cache for ID:', params.id);
+              console.log('❌ ID not found:', params.id);
+              setError('해당 공고를 찾을 수 없습니다. 목록 페이지에서 다시 시도해주세요.');
+              setLoading(false);
+              return;
             }
+          } else {
+            setError('데이터를 불러올 수 없습니다. 목록 페이지에서 먼저 공고를 조회해주세요.');
+            setLoading(false);
+            return;
           }
         }
-        
-        // 캐시에 없으면 API 호출
-        console.log('Not in cache, fetching from API:', params.id);
-        const res = await fetch(`/api/prespec/${params.id}`);
-        const json = await res.json();
-
-        if (!res.ok || !json.success) {
-          throw new Error(json.error || "Failed to fetch");
-        }
-
-        setData(json.data);
       } catch (err) {
         console.error("Fetch error:", err);
         setError(err.message);
-      } finally {
         setLoading(false);
       }
     };
