@@ -1137,7 +1137,8 @@ export default function Home() {
                 justifyContent: "space-between",
                 alignItems: "flex-start",
                 marginBottom: "10px",
-                gap: "10px"
+                gap: "10px",
+                flexWrap: "wrap"
               }}>
                 <a
                   href={
@@ -1155,10 +1156,10 @@ export default function Home() {
                     flex: 1,
                     minWidth: 0,
                     cursor: "pointer",
-                    display: "block",
-                    wordBreak: "break-word", // 긴 단어 강제 줄바꿈
-                    overflowWrap: "break-word", // 긴 단어 강제 줄바꿈
-                    lineHeight: "1.5" // 가독성 개선
+                    display: "inline",
+                    wordBreak: "break-word",
+                    overflowWrap: "break-word",
+                    lineHeight: "1.5"
                   }}
                 >
                   {/* 사전규격 표시 (제목 앞) */}
@@ -1172,7 +1173,9 @@ export default function Home() {
                       backgroundColor: "#f0f9ff",
                       color: "#0369a1",
                       border: "1px solid #bae6fd",
-                      whiteSpace: "nowrap"
+                      whiteSpace: "nowrap",
+                      display: "inline-block",
+                      verticalAlign: "middle"
                     }}>
                       사전규격
                     </span>
@@ -1188,7 +1191,9 @@ export default function Home() {
                       fontWeight: "700",
                       backgroundColor: "#ef4444",
                       color: "#fff",
-                      whiteSpace: "nowrap"
+                      whiteSpace: "nowrap",
+                      display: "inline-block",
+                      verticalAlign: "middle"
                     }}>
                       NEW
                     </span>
