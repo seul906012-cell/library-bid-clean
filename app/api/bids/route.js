@@ -272,9 +272,10 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 페이지 URL 생성
+      // 사전규격 공고 상세 페이지 URL 생성
+      // 나라장터 사전규격 상세보기 페이지 형식
       if (item.bfSpecRgstNo) {
-        item.bidNtceUrl = `https://www.g2b.go.kr/pn/pnz/pnza/untyStdrdInfoListSrch.do?bfSpecRgstNo=${item.bfSpecRgstNo}`;
+        item.bidNtceUrl = `https://www.g2b.go.kr/pn/pnz/pnza/untyStdrdInfo.do?bfSpecRgstNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
