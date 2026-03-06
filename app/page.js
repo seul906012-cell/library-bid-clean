@@ -926,7 +926,11 @@ export default function Home() {
                     color:"#111",
                     flex: 1,
                     minWidth: 0,
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    display: "block",
+                    wordBreak: "break-word", // 긴 단어 강제 줄바꿈
+                    overflowWrap: "break-word", // 긴 단어 강제 줄바꿈
+                    lineHeight: "1.5" // 가독성 개선
                   }}
                 >
                   {item.bidNtceNm || item.prdctClsfcNoNm}
@@ -940,7 +944,8 @@ export default function Home() {
                       fontWeight: "600",
                       backgroundColor: "#f0f9ff",
                       color: "#0369a1",
-                      border: "1px solid #bae6fd"
+                      border: "1px solid #bae6fd",
+                      whiteSpace: "nowrap" // 배지는 한 줄 유지
                     }}>
                       사전규격
                     </span>
