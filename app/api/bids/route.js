@@ -268,8 +268,8 @@ export async function GET(request) {
   const preSpec = [];
   
   [...nationalPreSpecItems, ...assemblyPreSpecItems, ...keywordPreSpecItems].forEach((item) => {
-    // 사전규격은 고유 ID가 다를 수 있으므로 확인 필요
-    const uniqueId = item.stdNo || item.bidNtceNo || item.untyStdNo || item.stdNtceNo;
+    // 사전규격은 bfSpecRgstNo를 고유 ID로 사용
+    const uniqueId = item.bfSpecRgstNo || item.stdNo || item.untyStdNo || item.stdNtceNo;
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       preSpec.push(item);
@@ -281,7 +281,7 @@ export async function GET(request) {
   // 🔍 중복 제거: 입찰공고에 사전규격번호가 있으면 해당 사전규격 제외
   // (입찰공고 = 사전규격의 다음 단계이므로, 입찰공고만 표시)
   const filteredPreSpec = preSpec.filter(preSpecItem => {
-    const preSpecId = preSpecItem.stdNo || preSpecItem.untyStdNo || preSpecItem.stdNtceNo;
+    const preSpecId = preSpecItem.bfSpecRgstNo;
     
     // 입찰공고 중에 이 사전규격번호를 가진 것이 있는지 확인
     const hasBidNotice = [...national, ...assembly, ...keyword].some(
@@ -300,7 +300,7 @@ export async function GET(request) {
   const all = [];
 
   [...national, ...assembly, ...keyword, ...filteredPreSpec].forEach((item) => {
-    const uniqueId = item.bidNtceNo || item.stdNo || item.untyStdNo || item.stdNtceNo;
+    const uniqueId = item.bidNtceNo || item.bfSpecRgstNo;
     if (uniqueId && !map.has(uniqueId)) {
       map.set(uniqueId, true);
       all.push(item);
