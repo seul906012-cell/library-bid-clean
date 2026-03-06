@@ -18,10 +18,24 @@ export async function GET(request, { params }) {
 
   try {
     // API 호출 (등록번호로 검색)
-    const query = `inqryDiv=1&inqryBgnDt=202001010000&inqryEndDt=209912312359&bfSpecRgstNo=${id}&numOfRows=1&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+    // 최근 1년 범위로 검색 (API 입력범위 제한 때문에 좁은 범위 사용)
+    const today = new Date();
+    const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+    
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}${month}${day}`;
+    };
+    
+    const startDt = `${formatDate(oneYearAgo)}0000`;
+    const endDt = `${formatDate(today)}2359`;
+    
+    const query = `inqryDiv=1&inqryBgnDt=${startDt}&inqryEndDt=${endDt}&bfSpecRgstNo=${id}&numOfRows=1&pageNo=1&ServiceKey=${SERVICE_KEY}`;
     const url = `${preSpecUrl}/${operation}?${query}`;
     
-    console.log(`Fetching pre-spec detail: ${id}`);
+    console.log(`Fetching pre-spec detail: ${id} (${startDt} ~ ${endDt})`);
     
     const res = await fetch(url);
     const xml = await res.text();
