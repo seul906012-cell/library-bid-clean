@@ -155,12 +155,16 @@ export default function Home() {
 
 
   const isNational = (i)=>{
-    const name=(i.dminsttNm||"")+(i.ntceInsttNm||"");
+    // 입찰공고: dminsttNm, ntceInsttNm
+    // 사전규격: rlDminsttNm, orderInsttNm
+    const name=(i.dminsttNm||"")+(i.ntceInsttNm||"")+(i.rlDminsttNm||"")+(i.orderInsttNm||"");
     return name.includes("국립중앙도서관");
   };
 
   const isAssembly = (i)=>{
-    const name=(i.dminsttNm||"")+(i.ntceInsttNm||"");
+    // 입찰공고: dminsttNm, ntceInsttNm
+    // 사전규격: rlDminsttNm, orderInsttNm
+    const name=(i.dminsttNm||"")+(i.ntceInsttNm||"")+(i.rlDminsttNm||"")+(i.orderInsttNm||"");
     return name.includes("국회도서관");
   };
 
