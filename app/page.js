@@ -64,6 +64,12 @@ export default function Home() {
       setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
       
       const allData = res.all ? res.all : res;
+      
+      // 디버그 로그
+      console.log('=== API 응답 데이터 ===');
+      console.log('전체 항목 수:', allData.length);
+      console.log('API debug:', res.debug);
+      
       setFullData(allData); // 전체 데이터 저장
       setData(allData); // 현재 표시 데이터
       
@@ -368,6 +374,17 @@ export default function Home() {
   const preSpecCount = data.filter(i=>
     i.bfSpecRgstNo && !i.bidNtceNo
   ).length;
+  
+  // 디버그: 카운트 확인
+  if (typeof window !== 'undefined' && data.length > 0) {
+    console.log('=== 카테고리별 카운트 ===');
+    console.log('전체:', totalCount);
+    console.log('국립중앙:', nationalCount);
+    console.log('국회:', assemblyCount);
+    console.log('키워드:', keywordCount);
+    console.log('사전규격:', preSpecCount);
+    console.log('합계:', nationalCount + assemblyCount + keywordCount + preSpecCount);
+  }
 
   // 키워드 카테고리별 건수 (입찰공고만, 사전규격 제외)
   const keywordCategoryCounts = {
