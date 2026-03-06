@@ -65,6 +65,7 @@ export async function GET(request) {
   // 디버깅: SERVICE_KEY 확인
   console.log("SERVICE_KEY exists:", !!SERVICE_KEY);
   console.log("SERVICE_KEY length:", SERVICE_KEY?.length || 0);
+  console.log("SERVICE_KEY last 4 chars:", SERVICE_KEY ? `...${SERVICE_KEY.slice(-4)}` : "MISSING");
   console.log("Requested period (days):", periodDays);
 
   // 날짜 설정: 요청된 기간의 데이터
