@@ -52,7 +52,7 @@ export default function PreSpecDetailPage() {
     fetchDetail();
   }, [params.id]);
 
-  // 파일명 가져오기
+  // 파일명 가져오기 (클라이언트에서 직접)
   useEffect(() => {
     if (!data) return;
     
@@ -63,22 +63,53 @@ export default function PreSpecDetailPage() {
       
       const names = {};
       
-      for (let i = 0; i < attachments.length; i++) {
-        const url = attachments[i];
-        try {
-          const res = await fetch(`/api/filename?url=${encodeURIComponent(url)}`);
-          const json = await res.json();
-          
-          if (json.success && json.filename) {
-            names[url] = json.filename;
-          } else {
-            names[url] = `첨부파일 ${i + 1}`;
+      // 병렬로 모든 파일명 가져오기
+      await Promise.all(
+        attachments.map(async (url, i) => {
+          try {
+            // 클라이언트에서 직접 요청 시도 (CORS 문제 가능)
+            const res = await fetch(url, { 
+              method: 'GET',
+              headers: { 'Range': 'bytes=0-0' }
+            });
+            
+            const contentDisposition = res.headers.get('content-disposition');
+            
+            if (contentDisposition) {
+              const filenameMatch = contentDisposition.match(/filename=([^;]+)/i);
+              
+              if (filenameMatch && filenameMatch[1]) {
+                let filename = filenameMatch[1];
+                try {
+                  filename = decodeURIComponent(filename);
+                } catch (e) {
+                  // 디코딩 실패 시 원본 사용
+                }
+                names[url] = filename;
+                return;
+              }
+            }
+            
+            // CORS 에러 또는 파일명 없을 시 API 사용
+            throw new Error('Direct fetch failed');
+            
+          } catch (err) {
+            // Fallback: 서버 API 사용
+            try {
+              const res = await fetch(`/api/filename?url=${encodeURIComponent(url)}`);
+              const json = await res.json();
+              
+              if (json.success && json.filename) {
+                names[url] = json.filename;
+              } else {
+                names[url] = `첨부파일 ${i + 1}`;
+              }
+            } catch (apiErr) {
+              names[url] = `첨부파일 ${i + 1}`;
+            }
           }
-        } catch (err) {
-          console.error('Failed to fetch filename:', err);
-          names[url] = `첨부파일 ${i + 1}`;
-        }
-      }
+        })
+      );
       
       setFileNames(names);
     };
