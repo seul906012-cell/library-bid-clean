@@ -64,12 +64,13 @@ export default function Home() {
       setFullData(allData); // 전체 데이터 저장
       setData(allData); // 현재 표시 데이터
       
-      // sessionStorage에 데이터 저장 (상세 페이지에서 사용)
+      // localStorage에 데이터 저장 (상세 페이지에서 사용, 새 탭에서도 공유됨)
       if (typeof window !== 'undefined') {
         try {
-          sessionStorage.setItem('bidData', JSON.stringify(allData));
+          localStorage.setItem('bidData', JSON.stringify(allData));
+          localStorage.setItem('bidDataTimestamp', Date.now().toString());
         } catch (e) {
-          console.warn('Failed to save to sessionStorage:', e);
+          console.warn('Failed to save to localStorage:', e);
         }
       }
       

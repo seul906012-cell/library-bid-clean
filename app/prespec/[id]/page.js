@@ -17,18 +17,23 @@ export default function PreSpecDetailPage() {
       try {
         setLoading(true);
         
-        // 먼저 sessionStorage에서 캐시된 데이터 확인
+        // 먼저 localStorage에서 캐시된 데이터 확인 (새 탭에서도 공유됨)
         if (typeof window !== 'undefined') {
-          const cachedData = sessionStorage.getItem('bidData');
+          const cachedData = localStorage.getItem('bidData');
           if (cachedData) {
             const allData = JSON.parse(cachedData);
+            console.log('Searching for ID:', params.id);
+            console.log('Total cached items:', allData.length);
+            
             const item = allData.find(d => d.bfSpecRgstNo === params.id);
             
             if (item) {
-              console.log('Found in cache:', params.id);
+              console.log('✅ Found in cache:', item.prdctClsfcNoNm || item.bidNtceNm);
               setData(item);
               setLoading(false);
               return;
+            } else {
+              console.log('❌ Not found in cache for ID:', params.id);
             }
           }
         }
