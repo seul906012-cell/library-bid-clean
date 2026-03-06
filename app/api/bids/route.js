@@ -272,12 +272,10 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 URL 생성
-      // 나라장터는 사전규격 직접 링크를 지원하지 않으므로 검색 페이지로 연결
-      // 사전규격등록번호로 검색하면 바로 해당 공고가 나옴
+      // 사전규격 공고 상세 페이지 URL 생성
+      // 나라장터 8101 포트 사전규격 상세 페이지
       if (item.bfSpecRgstNo) {
-        const encodedSearchTerm = encodeURIComponent(item.bfSpecRgstNo);
-        item.bidNtceUrl = `https://www.g2b.go.kr:8101/ep/preparation/prestd/preStdPublList.do?taskClCds=5&searchType=G&searchWord=${encodedSearchTerm}`;
+        item.bidNtceUrl = `https://www.g2b.go.kr:8101/ep/preparation/prestd/preStdPublDtl.do?preStdRegNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
