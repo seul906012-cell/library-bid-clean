@@ -13,9 +13,11 @@ export async function GET(request) {
 
   // 올바른 엔드포인트 (공공데이터포털에서 확인)
   const baseUrl = "https://apis.data.go.kr/1230000/ad/BidPublicInfoService";
+  const preSpecUrl = "https://apis.data.go.kr/1230000/ao/HrcspSsstndrdInfoService";  // 사전규격정보서비스
   
   // 용역 검색용 operation (목록 조회)
   const operation = "getBidPblancListInfoServcPPSSrch";   // 용역 검색
+  const preSpecOperation = "getPrearngStdrdPublicListInfo01";  // 사전규격 목록 조회
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
@@ -126,7 +128,7 @@ export async function GET(request) {
   });
 
   // 3. 키워드로 공고 조회 (모든 키워드 × 날짜 구간 병렬)
-  console.log(`🔍 [3/3] Fetching Keywords (${keywords.length} keywords)...`);
+  console.log(`🔍 [3/4] Fetching Keywords (${keywords.length} keywords)...`);
   const keywordPromises = keywords.flatMap(kw =>
     dateRanges.map(range => {
       const kwQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&bidNtceNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
@@ -135,21 +137,32 @@ export async function GET(request) {
     })
   );
 
+  // 4. 사전규격 공고 조회 (모든 키워드 × 날짜 구간 병렬)
+  console.log(`📋 [4/4] Fetching Pre-Specifications (${keywords.length} keywords)...`);
+  const preSpecPromises = keywords.flatMap(kw =>
+    dateRanges.map(range => {
+      const preSpecQuery = `inqryDiv=1&inqryBgnDt=${range.start}&inqryEndDt=${range.end}&stdNm=${encodeURIComponent(kw)}&numOfRows=200&pageNo=1&ServiceKey=${SERVICE_KEY}`;
+      const preSpecQueryUrl = `${preSpecUrl}/${preSpecOperation}?${preSpecQuery}`;
+      return fetchData(preSpecQueryUrl);
+    })
+  );
+
   // 모든 요청 병렬 실행
-  const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length;
+  const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length + preSpecPromises.length;
   console.log(`🚀 Executing ${totalRequests} API requests in parallel...`);
   
-  const [nationalResults, assemblyResults, keywordResults] = await Promise.all([
+  const [nationalResults, assemblyResults, keywordResults, preSpecResults] = await Promise.all([
     Promise.all(nationalPromises),
     Promise.all(assemblyPromises),
-    Promise.all(keywordPromises)
+    Promise.all(keywordPromises),
+    Promise.all(preSpecPromises)
   ]);
 
   const fetchTime = Date.now() - startTime;
   console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
 
   // API 트래픽 한도 초과 체크
-  const hasQuotaError = [...nationalResults, ...assemblyResults, ...keywordResults]
+  const hasQuotaError = [...nationalResults, ...assemblyResults, ...keywordResults, ...preSpecResults]
     .flat()
     .some(item => item && item.error === "QUOTA_EXCEEDED");
 
@@ -213,14 +226,29 @@ export async function GET(request) {
   });
   console.log(`Keywords: ${keywordItems.length} total, ${keyword.length} unique`);
 
+  // 사전규격 결과 처리
+  const preSpecItems = preSpecResults.flat().filter(item => item && !item.error);
+  const preSpecMap = new Map();
+  const preSpec = [];
+  preSpecItems.forEach((item) => {
+    // 사전규격은 고유 ID가 다를 수 있으므로 확인 필요
+    const uniqueId = item.stdNo || item.bidNtceNo || item.untyStdNo;
+    if (uniqueId && !preSpecMap.has(uniqueId)) {
+      preSpecMap.set(uniqueId, true);
+      preSpec.push(item);
+    }
+  });
+  console.log(`Pre-Specifications: ${preSpecItems.length} total, ${preSpec.length} unique`);
+
   /* 전체 합치기 */
 
   const map = new Map();
   const all = [];
 
-  [...national, ...assembly, ...keyword].forEach((item) => {
-    if (!map.has(item.bidNtceNo)) {
-      map.set(item.bidNtceNo, true);
+  [...national, ...assembly, ...keyword, ...preSpec].forEach((item) => {
+    const uniqueId = item.bidNtceNo || item.stdNo || item.untyStdNo;
+    if (uniqueId && !map.has(uniqueId)) {
+      map.set(uniqueId, true);
       all.push(item);
     }
   });
@@ -232,12 +260,14 @@ export async function GET(request) {
     national,
     assembly,
     keyword,
+    preSpec,  // 사전규격 추가
     all,
     debug: {
       hasServiceKey: !!SERVICE_KEY,
       nationalCount: national.length,
       assemblyCount: assembly.length,
       keywordCount: keyword.length,
+      preSpecCount: preSpec.length,  // 사전규격 카운트 추가
       totalItems: all.length,
       fetchTimeMs: fetchTime,
       dateRanges: dateRanges.length,
