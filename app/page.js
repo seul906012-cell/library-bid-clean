@@ -912,10 +912,7 @@ export default function Home() {
                       ? `/prespec/${item.bfSpecRgstNo}` 
                       : (item.bidNtceUrl || "#")
                   }
-                  target={
-                    // 사전규격이면 같은 탭, 입찰공고면 새 탭
-                    (item.bfSpecRgstNo && !item.bidNtceNo) ? "_self" : "_blank"
-                  }
+                  target="_blank"
                   style={{
                     fontWeight:"bold",
                     fontSize:"16px",
@@ -979,54 +976,6 @@ export default function Home() {
                   )}
                 </div>
               </div>
-
-              {/* 사전규격 첨부파일 목록 (최대 5개) */}
-              {item.bfSpecRgstNo && !item.bidNtceNo && (
-                <div style={{ marginTop: "8px", marginBottom: "8px" }}>
-                  <div style={{ 
-                    display: "flex", 
-                    flexWrap: "wrap", 
-                    gap: "8px" 
-                  }}>
-                    {[1, 2, 3, 4, 5].map((num) => {
-                      const fileUrl = item[`specDocFileUrl${num}`];
-                      if (!fileUrl) return null;
-                      
-                      return (
-                        <a
-                          key={num}
-                          href={fileUrl}
-                          target="_blank"
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            padding: "6px 12px",
-                            backgroundColor: "#f0f9ff",
-                            color: "#0369a1",
-                            border: "1px solid #bae6fd",
-                            borderRadius: "6px",
-                            fontSize: "13px",
-                            fontWeight: "500",
-                            textDecoration: "none",
-                            transition: "all 0.2s"
-                          }}
-                          onMouseOver={(e) => {
-                            e.currentTarget.style.backgroundColor = "#e0f2fe";
-                            e.currentTarget.style.borderColor = "#7dd3fc";
-                          }}
-                          onMouseOut={(e) => {
-                            e.currentTarget.style.backgroundColor = "#f0f9ff";
-                            e.currentTarget.style.borderColor = "#bae6fd";
-                          }}
-                        >
-                          📄 첨부파일 {num}
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               <div style={{
                 marginTop:"6px",
