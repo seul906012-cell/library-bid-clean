@@ -31,6 +31,12 @@ export async function GET(request) {
       console.log("API Response Status:", res.status);
       console.log("API Response (first 200 chars):", xml.substring(0, 200));
 
+      // Unauthorized 체크 (사전규격 API 승인 대기)
+      if (xml.includes("Unauthorized") || xml.includes("unauthorized")) {
+        console.error("⚠️  API Unauthorized - waiting for activation");
+        return [];
+      }
+
       // API 트래픽 한도 초과 체크
       if (xml.includes("API token quota exceeded") || xml.includes("quota exceeded")) {
         console.error("⚠️  API token quota exceeded!");
