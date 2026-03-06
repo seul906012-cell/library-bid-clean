@@ -204,10 +204,17 @@ export default function Home() {
         i.pubPrcrmntClsfcNm || "",      // 공공조달 소분류
         i.dminsttNm || "",              // 수요기관명
         i.ntceInsttNm || "",            // 공고기관명
-        // 첨부파일명도 검색 (사전규격이 파일명에 있을 수 있음)
+        // 첨부파일명 전체 검색 (사전규격이 파일명에 있을 수 있음)
         i.ntceSpecFileNm1 || "",
         i.ntceSpecFileNm2 || "",
-        i.ntceSpecFileNm3 || ""
+        i.ntceSpecFileNm3 || "",
+        i.ntceSpecFileNm4 || "",
+        i.ntceSpecFileNm5 || "",
+        i.ntceSpecFileNm6 || "",
+        i.ntceSpecFileNm7 || "",
+        i.ntceSpecFileNm8 || "",
+        i.ntceSpecFileNm9 || "",
+        i.ntceSpecFileNm10 || ""
       ].join(" ").toLowerCase();
       
       return searchableText.includes(searchLower);
