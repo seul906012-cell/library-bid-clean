@@ -17,7 +17,7 @@ export async function GET(request) {
   
   // 용역 검색용 operation (목록 조회)
   const operation = "getBidPblancListInfoServcPPSSrch";   // 용역 검색
-  const preSpecOperation = "getPrearngStdrdPublicListInfo01";  // 사전규격 목록 조회
+  const preSpecOperation = "getPublicPrcureThngInfoServc";  // 사전규격 용역 목록 조회
 
   const parser = new xml2js.Parser({ explicitArray: false });
 
