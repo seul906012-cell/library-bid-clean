@@ -272,10 +272,12 @@ export async function GET(request) {
     if (uniqueId && !preSpecMap.has(uniqueId)) {
       preSpecMap.set(uniqueId, true);
       
-      // 사전규격 공고 검색 페이지 URL 생성
-      // 나라장터 사전규격 검색 페이지에서 사전규격등록번호로 검색
+      // 사전규격 공고 URL 생성
+      // 나라장터는 사전규격 직접 링크를 지원하지 않으므로 검색 페이지로 연결
+      // 사전규격등록번호로 검색하면 바로 해당 공고가 나옴
       if (item.bfSpecRgstNo) {
-        item.bidNtceUrl = `https://www.g2b.go.kr/pn/pnz/pnza/untyStdrdInfoListSrch.do?stdRegNo=${item.bfSpecRgstNo}`;
+        const encodedSearchTerm = encodeURIComponent(item.bfSpecRgstNo);
+        item.bidNtceUrl = `https://www.g2b.go.kr:8101/ep/preparation/prestd/preStdPublList.do?taskClCds=5&searchType=G&searchWord=${encodedSearchTerm}`;
       }
       
       preSpec.push(item);
