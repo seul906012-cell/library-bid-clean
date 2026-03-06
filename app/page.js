@@ -897,8 +897,15 @@ export default function Home() {
                 gap: "10px"
               }}>
                 <a
-                  href={item.bidNtceUrl || item.specDocFileUrl1}
-                  target="_blank"
+                  href={item.bidNtceUrl || "#"}
+                  target={item.bidNtceUrl ? "_blank" : "_self"}
+                  onClick={(e) => {
+                    // 사전규격이고 bidNtceUrl이 없으면 PDF 다운로드
+                    if (!item.bidNtceUrl && item.specDocFileUrl1) {
+                      e.preventDefault();
+                      window.open(item.specDocFileUrl1, '_blank');
+                    }
+                  }}
                   style={{
                     fontWeight:"bold",
                     fontSize:"16px",
@@ -909,6 +916,21 @@ export default function Home() {
                   }}
                 >
                   {item.bidNtceNm || item.prdctClsfcNoNm}
+                  {/* 사전규격 표시 */}
+                  {item.bfSpecRgstNo && !item.bidNtceNo && (
+                    <span style={{
+                      marginLeft: "8px",
+                      padding: "2px 6px",
+                      borderRadius: "4px",
+                      fontSize: "11px",
+                      fontWeight: "600",
+                      backgroundColor: "#f0f9ff",
+                      color: "#0369a1",
+                      border: "1px solid #bae6fd"
+                    }}>
+                      사전규격
+                    </span>
+                  )}
                 </a>
                 
                 <div style={{
@@ -946,6 +968,40 @@ export default function Home() {
                   )}
                 </div>
               </div>
+
+              {/* 사전규격 PDF 다운로드 버튼 */}
+              {item.bfSpecRgstNo && !item.bidNtceNo && item.specDocFileUrl1 && (
+                <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+                  <a
+                    href={item.specDocFileUrl1}
+                    target="_blank"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "6px 12px",
+                      backgroundColor: "#f0f9ff",
+                      color: "#0369a1",
+                      border: "1px solid #bae6fd",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                      textDecoration: "none",
+                      transition: "all 0.2s"
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.backgroundColor = "#e0f2fe";
+                      e.target.style.borderColor = "#7dd3fc";
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.backgroundColor = "#f0f9ff";
+                      e.target.style.borderColor = "#bae6fd";
+                    }}
+                  >
+                    📄 사전규격 문서 다운로드
+                  </a>
+                </div>
+              )}
 
               <div style={{
                 marginTop:"6px",
