@@ -276,21 +276,25 @@ export default function Home() {
 
 
   const totalCount = data.filter(i =>
-    isNational(i)||isAssembly(i)||isKeywordAll(i)
+    isNational(i)||isAssembly(i)||isKeywordAll(i)||(i.bfSpecRgstNo && !i.bidNtceNo)
   ).length;
 
+  // 1. 국립중앙도서관: 입찰공고 + 사전규격 모두 포함
   const nationalCount = data.filter(i=>isNational(i)).length;
 
-  const assemblyCount = data.filter(i=>isAssembly(i)).length;
+  // 2. 국회도서관: 입찰공고 + 사전규격 모두 포함 (국립중앙 제외)
+  const assemblyCount = data.filter(i=>
+    isAssembly(i) && !isNational(i)
+  ).length;
 
-  // 키워드 카운트: 국립중앙/국회 제외한 순수 키워드만
+  // 3. 키워드: 국립중앙/국회 제외한 키워드 공고 (입찰+사전규격 모두)
   const keywordCount = data.filter(i=>
     isKeywordAll(i) && !isNational(i) && !isAssembly(i)
   ).length;
 
-  // 사전규격 카운트: bfSpecRgstNo가 있고 bidNtceNo가 없는 것
+  // 4. 사전규격: 국립중앙/국회/키워드 제외한 순수 사전규격만
   const preSpecCount = data.filter(i=>
-    i.bfSpecRgstNo && !i.bidNtceNo
+    i.bfSpecRgstNo && !i.bidNtceNo && !isNational(i) && !isAssembly(i) && !isKeywordAll(i)
   ).length;
 
   // 키워드 카테고리별 건수 (국립중앙/국회 제외)
