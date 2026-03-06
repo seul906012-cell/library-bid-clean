@@ -89,12 +89,27 @@ export async function GET(request) {
   }
 
   // 배치 처리 함수: Promise 배열을 N개씩 나눠서 순차 실행
-  async function processBatches(promises, batchSize = 10) {
+  async function processBatches(promises, batchSize = 10, categoryName = "") {
     const results = [];
+    let successCount = 0;
+    let failCount = 0;
+    
     for (let i = 0; i < promises.length; i += batchSize) {
       const batch = promises.slice(i, i + batchSize);
-      console.log(`  Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(promises.length / batchSize)} (${batch.length} requests)...`);
+      console.log(`  [${categoryName}] Batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(promises.length / batchSize)} (${batch.length} requests)...`);
       const batchResults = await Promise.all(batch);
+      
+      // 성공/실패 카운트
+      batchResults.forEach(result => {
+        if (result && result.length > 0) {
+          successCount++;
+        } else if (result && result.error) {
+          failCount++;
+        } else {
+          failCount++;
+        }
+      });
+      
       results.push(...batchResults);
       
       // 배치 간 지연 (API 부하 감소 및 타임아웃 방지)
@@ -102,6 +117,8 @@ export async function GET(request) {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
+    
+    console.log(`  [${categoryName}] Complete: ${successCount} success, ${failCount} failed/empty`);
     return results;
   }
 
@@ -221,22 +238,22 @@ export async function GET(request) {
   console.log(`🚀 Executing ${totalRequests} API requests sequentially in batches of 10...`);
   
   console.log(`[1/6] Processing National Library (${nationalPromises.length} requests)...`);
-  const nationalResults = await processBatches(nationalPromises, 10);
+  const nationalResults = await processBatches(nationalPromises, 10, "National");
   
   console.log(`[2/6] Processing Assembly Library (${assemblyPromises.length} requests)...`);
-  const assemblyResults = await processBatches(assemblyPromises, 10);
+  const assemblyResults = await processBatches(assemblyPromises, 10, "Assembly");
   
   console.log(`[3/6] Processing Keywords (${keywordPromises.length} requests)...`);
-  const keywordResults = await processBatches(keywordPromises, 10);
+  const keywordResults = await processBatches(keywordPromises, 10, "Keywords");
   
   console.log(`[4/6] Processing National Pre-Spec (${nationalPreSpecPromises.length} requests)...`);
-  const nationalPreSpecResults = await processBatches(nationalPreSpecPromises, 10);
+  const nationalPreSpecResults = await processBatches(nationalPreSpecPromises, 10, "National Pre-Spec");
   
   console.log(`[5/6] Processing Assembly Pre-Spec (${assemblyPreSpecPromises.length} requests)...`);
-  const assemblyPreSpecResults = await processBatches(assemblyPreSpecPromises, 10);
+  const assemblyPreSpecResults = await processBatches(assemblyPreSpecPromises, 10, "Assembly Pre-Spec");
   
   console.log(`[6/6] Processing Keyword Pre-Spec (${keywordPreSpecPromises.length} requests)...`);
-  const keywordPreSpecResults = await processBatches(keywordPreSpecPromises, 10);
+  const keywordPreSpecResults = await processBatches(keywordPreSpecPromises, 10, "Keyword Pre-Spec");
 
   const fetchTime = Date.now() - startTime;
   console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
