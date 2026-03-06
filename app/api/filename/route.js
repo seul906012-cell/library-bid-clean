@@ -11,15 +11,21 @@ export async function GET(request) {
   }
 
   try {
-    // HEAD 요청으로 헤더만 가져오기
-    const res = await fetch(url, { method: 'HEAD' });
+    // GET 요청으로 헤더 가져오기 (HEAD는 403 에러 발생)
+    // Range 헤더로 첫 1바이트만 요청해서 빠르게 처리
+    const res = await fetch(url, { 
+      method: 'GET',
+      headers: {
+        'Range': 'bytes=0-0'
+      }
+    });
     
     // Content-Disposition 헤더에서 파일명 추출
     const contentDisposition = res.headers.get('content-disposition');
     
     if (contentDisposition) {
-      // filename*=UTF-8''encoded-name 또는 filename="name" 형식 파싱
-      const filenameMatch = contentDisposition.match(/filename\*?=(?:UTF-8'')?["']?([^"';]+)["']?/i);
+      // filename=encoded-name 형식 파싱
+      const filenameMatch = contentDisposition.match(/filename=([^;]+)/i);
       
       if (filenameMatch && filenameMatch[1]) {
         let filename = filenameMatch[1];
