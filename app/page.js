@@ -191,9 +191,27 @@ export default function Home() {
 
 
   if(search){
-    filtered = filtered.filter(i=>
-      (i.bidNtceNm||"").toLowerCase().includes(search.toLowerCase())
-    );
+    filtered = filtered.filter(i=>{
+      const searchLower = search.toLowerCase();
+      // 여러 필드를 통합하여 검색
+      const searchableText = [
+        i.bidNtceNm || "",              // 공고명
+        i.ntceKindNm || "",             // 공고종류
+        i.cntrctCnclsMthdNm || "",      // 계약방법
+        i.srvceDivNm || "",             // 용역구분
+        i.pubPrcrmntLrgClsfcNm || "",   // 공공조달 대분류
+        i.pubPrcrmntMidClsfcNm || "",   // 공공조달 중분류
+        i.pubPrcrmntClsfcNm || "",      // 공공조달 소분류
+        i.dminsttNm || "",              // 수요기관명
+        i.ntceInsttNm || "",            // 공고기관명
+        // 첨부파일명도 검색 (사전규격이 파일명에 있을 수 있음)
+        i.ntceSpecFileNm1 || "",
+        i.ntceSpecFileNm2 || "",
+        i.ntceSpecFileNm3 || ""
+      ].join(" ").toLowerCase();
+      
+      return searchableText.includes(searchLower);
+    });
   }
 
 
