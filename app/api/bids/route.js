@@ -225,8 +225,14 @@ export async function GET(request) {
   const nationalMap = new Map();
   const national = [];
   nationalItems.forEach((item) => {
-    if (!nationalMap.has(item.bidNtceNo)) {
-      nationalMap.set(item.bidNtceNo, true);
+    // bidNtceNo가 있을 때만 중복 체크
+    if (item.bidNtceNo) {
+      if (!nationalMap.has(item.bidNtceNo)) {
+        nationalMap.set(item.bidNtceNo, true);
+        national.push(item);
+      }
+    } else {
+      // bidNtceNo가 없으면 무조건 추가 (중복 체크 안 함)
       national.push(item);
     }
   });
@@ -236,8 +242,14 @@ export async function GET(request) {
   const assemblyMap = new Map();
   const assembly = [];
   assemblyItems.forEach((item) => {
-    if (!assemblyMap.has(item.bidNtceNo)) {
-      assemblyMap.set(item.bidNtceNo, true);
+    // bidNtceNo가 있을 때만 중복 체크
+    if (item.bidNtceNo) {
+      if (!assemblyMap.has(item.bidNtceNo)) {
+        assemblyMap.set(item.bidNtceNo, true);
+        assembly.push(item);
+      }
+    } else {
+      // bidNtceNo가 없으면 무조건 추가 (중복 체크 안 함)
       assembly.push(item);
     }
   });
@@ -249,8 +261,14 @@ export async function GET(request) {
   const keywordMap = new Map();
   const keyword = [];
   keywordItems.forEach((item) => {
-    if (!keywordMap.has(item.bidNtceNo)) {
-      keywordMap.set(item.bidNtceNo, true);
+    // bidNtceNo가 있을 때만 중복 체크
+    if (item.bidNtceNo) {
+      if (!keywordMap.has(item.bidNtceNo)) {
+        keywordMap.set(item.bidNtceNo, true);
+        keyword.push(item);
+      }
+    } else {
+      // bidNtceNo가 없으면 무조건 추가 (중복 체크 안 함)
       keyword.push(item);
     }
   });
