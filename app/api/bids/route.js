@@ -190,19 +190,28 @@ export async function GET(request) {
     })
   );
 
-  // 모든 요청 배치 처리로 실행 (한 번에 10개씩, 배치 간 500ms 대기)
+  // 모든 요청 순차 처리 (카테고리별로 하나씩)
   const totalRequests = nationalPromises.length + assemblyPromises.length + keywordPromises.length 
     + nationalPreSpecPromises.length + assemblyPreSpecPromises.length + keywordPreSpecPromises.length;
-  console.log(`🚀 Executing ${totalRequests} API requests in batches of 10...`);
+  console.log(`🚀 Executing ${totalRequests} API requests sequentially in batches of 10...`);
   
-  const [nationalResults, assemblyResults, keywordResults, nationalPreSpecResults, assemblyPreSpecResults, keywordPreSpecResults] = await Promise.all([
-    processBatches(nationalPromises, 10),
-    processBatches(assemblyPromises, 10),
-    processBatches(keywordPromises, 10),
-    processBatches(nationalPreSpecPromises, 10),
-    processBatches(assemblyPreSpecPromises, 10),
-    processBatches(keywordPreSpecPromises, 10)
-  ]);
+  console.log(`[1/6] Processing National Library (${nationalPromises.length} requests)...`);
+  const nationalResults = await processBatches(nationalPromises, 10);
+  
+  console.log(`[2/6] Processing Assembly Library (${assemblyPromises.length} requests)...`);
+  const assemblyResults = await processBatches(assemblyPromises, 10);
+  
+  console.log(`[3/6] Processing Keywords (${keywordPromises.length} requests)...`);
+  const keywordResults = await processBatches(keywordPromises, 10);
+  
+  console.log(`[4/6] Processing National Pre-Spec (${nationalPreSpecPromises.length} requests)...`);
+  const nationalPreSpecResults = await processBatches(nationalPreSpecPromises, 10);
+  
+  console.log(`[5/6] Processing Assembly Pre-Spec (${assemblyPreSpecPromises.length} requests)...`);
+  const assemblyPreSpecResults = await processBatches(assemblyPreSpecPromises, 10);
+  
+  console.log(`[6/6] Processing Keyword Pre-Spec (${keywordPreSpecPromises.length} requests)...`);
+  const keywordPreSpecResults = await processBatches(keywordPreSpecPromises, 10);
 
   const fetchTime = Date.now() - startTime;
   console.log(`✅ All fetches completed in ${fetchTime}ms (${(fetchTime/1000).toFixed(1)}s)`);
