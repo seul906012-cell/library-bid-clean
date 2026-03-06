@@ -16,6 +16,7 @@ export default function Home() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPeriod, setSelectedPeriod] = useState(30); // 기본값: 1개월
+  const [apiStatus, setApiStatus] = useState("normal"); // API 트래픽 상태: "normal" | "quota_exceeded"
   const itemsPerPage = 15;
 
   // 최초 로드 시 1개월 데이터 자동 조회
@@ -49,12 +50,14 @@ export default function Home() {
       // API 트래픽 한도 초과 체크
       if (res.error === "QUOTA_EXCEEDED") {
         setLoadingMessage("⚠️ API 트래픽 한도 초과됨. 공공데이터포털에서 운영계정 전환 확인 필요");
+        setApiStatus("quota_exceeded"); // 트래픽 상태 업데이트
         setLoading(false);
         
         // 에러 메시지는 계속 표시
         return;
       }
       
+      setApiStatus("normal"); // 정상 상태로 설정
       setLoadingMessage(`로딩 완료! (${elapsed}초 소요)`);
       
       const allData = res.all ? res.all : res;
@@ -411,6 +414,32 @@ export default function Home() {
         }}>
           📚 도서관·기록물 입찰 공고 정보
         </h1>
+        
+        {/* API 트래픽 상태 표시 */}
+        <div style={{
+          padding: "8px 16px",
+          borderRadius: "6px",
+          fontSize: "13px",
+          fontWeight: "600",
+          backgroundColor: apiStatus === "quota_exceeded" ? "#fee" : "#d1fae5",
+          color: apiStatus === "quota_exceeded" ? "#dc2626" : "#059669",
+          border: `1px solid ${apiStatus === "quota_exceeded" ? "#fca5a5" : "#6ee7b7"}`,
+          display: "flex",
+          alignItems: "center",
+          gap: "6px"
+        }}>
+          {apiStatus === "quota_exceeded" ? (
+            <>
+              <span>⚠️</span>
+              <span>API 트래픽 한도 초과 - 내일 다시 시도해주세요</span>
+            </>
+          ) : (
+            <>
+              <span>✓</span>
+              <span>API 트래픽: 정상</span>
+            </>
+          )}
+        </div>
         
         {/* 로고 */}
         <div className="logo-container" style={{

@@ -86,6 +86,23 @@
     height: 40px !important;
   }
   
+  /* 모바일 API 상태 표시 */
+  .mobile-header > div[style*="API 트래픽"] {
+    font-size: 11px !important;
+    padding: 6px 12px !important;
+    width: 100%;
+    text-align: center;
+    order: 2;
+  }
+  
+  .mobile-header h1 {
+    order: 1;
+  }
+  
+  .mobile-header .logo-container {
+    order: 3;
+  }
+  
   /* 모바일 기간 버튼 */
   .period-buttons {
     display: grid !important;
