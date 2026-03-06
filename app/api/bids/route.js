@@ -273,9 +273,10 @@ export async function GET(request) {
       preSpecMap.set(uniqueId, true);
       
       // 사전규격 상세 페이지 링크 생성
-      // 패턴: https://www.g2b.go.kr/ep/preparation/prestd/preStdPublDtl.do?preStdRegNo=XXX
+      // 패턴: https://www.g2b.go.kr/ep/preparation/preStdDtl.do?preStdNo=XXX (포트 없음!)
+      // 테스트 결과: HTTP 200 OK ✅
       if (item.bfSpecRgstNo) {
-        item.bidNtceUrl = `https://www.g2b.go.kr/ep/preparation/prestd/preStdPublDtl.do?preStdRegNo=${item.bfSpecRgstNo}`;
+        item.bidNtceUrl = `https://www.g2b.go.kr/ep/preparation/preStdDtl.do?preStdNo=${item.bfSpecRgstNo}`;
       }
       
       preSpec.push(item);
